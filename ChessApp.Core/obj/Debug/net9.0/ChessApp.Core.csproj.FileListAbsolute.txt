@@ -1,0 +1,12 @@
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\bin\Debug\net9.0\ChessApp.Core.deps.json
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\bin\Debug\net9.0\ChessApp.Core.dll
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\bin\Debug\net9.0\ChessApp.Core.pdb
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\obj\Debug\net9.0\ChessApp.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\obj\Debug\net9.0\ChessApp.Core.AssemblyInfoInputs.cache
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\obj\Debug\net9.0\ChessApp.Core.AssemblyInfo.cs
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\obj\Debug\net9.0\ChessApp.Core.csproj.CoreCompileInputs.cache
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\obj\Debug\net9.0\ChessApp.Core.dll
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\obj\Debug\net9.0\refint\ChessApp.Core.dll
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\obj\Debug\net9.0\ChessApp.Core.pdb
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\obj\Debug\net9.0\ref\ChessApp.Core.dll
+C:\Users\GUTIERREZALE\Documents\MyApps\ChessApp\ChessApp.Core\obj\Debug\net9.0\ChessApp.Core.sourcelink.json
