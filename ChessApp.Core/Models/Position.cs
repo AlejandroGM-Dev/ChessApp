@@ -3,14 +3,14 @@
 namespace ChessApp.Core.Models;
 
 // Esta clase representa una posición en el tablero de ajedrez
-public class ChessPosition
+public class Position
 {
     public int Row { get; set; }        // Fila 1-8 (1 = abajo, 8 = arriba)
     public int Column { get; set; }     // Columna 1-8 (1 = a, 2 = b, ..., 8 = h)
     public string AlgebraicNotation { get; set; }  // Notación como "a1", "e4"
 
     // Constructor principal
-    public ChessPosition(int row, int column)
+    public Position(int row, int column)
     {
         // Validar que esté dentro del tablero
         if (row < 1 || row > 8 || column < 1 || column > 8)
@@ -22,7 +22,7 @@ public class ChessPosition
     }
 
     // Constructor desde notación algebraica como "a1", "e4"
-    public ChessPosition(string algebraicNotation)
+    public Position(string algebraicNotation)
     {
         if (string.IsNullOrEmpty(algebraicNotation) || algebraicNotation.Length != 2)
             throw new ArgumentException("Notación algebraica inválida. Use formato como 'a1', 'e4'");
