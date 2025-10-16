@@ -21,11 +21,11 @@ namespace ChessApp.Core.Pieces
             Type = type;
         }
 
-        // Metodo abstracto que todas las piezas deben implementar
+        // Metodo abstracto que todas las piezas deben implementar con su propia logica
 
         public abstract bool IsValidMove(Position from, Position to, Board board);
 
-        // Metodo para obtener el simbolo de la pieza en notaçión algebraica
+        // Metodo para obtener el simbolo de la pieza en notacion algebraica
         public virtual string GetSymbol()
         {
             return Type switch
@@ -42,19 +42,23 @@ namespace ChessApp.Core.Pieces
         // Metodo para verificar si el camino está libre (Para torres, alfiles y reinas)
         protected bool IsPathClear(Position from, Position to, Board board)
         {
-            int rowDirection = Math.Sign(to.Row - from.Row);
-            int colDirection = Math.Sign(to.Column - from.Column);
-            int currentRow = from.Row + rowDirection;
-            int currentCol = from.Column + colDirection;
+            int rowStep = Math.Sign(to.Row - from.Row);
+            int colStep = Math.Sign(to.Column - from.Column);
 
+            int currentRow = from.Row + rowStep;
+            int currentCol = from.Column + colStep;
+
+            // Verificar cada casilla en el camino hasta llegar al destino
             while (currentRow != to.Row || currentCol != to.Column)
             {
-                if (board.GetPieceAt(new Position(currentRow, currentCol)) != null)
+                Position currentPos = new Position(currentRow, currentCol);
+                if (board.GetPieceAt(currentPos) != null)
                     return false;
 
-                currentRow += rowDirection;
-                currentCol += colDirection;
+                currentRow += rowStep;
+                currentCol += colStep;
             }
+
             return true;
         }
     }

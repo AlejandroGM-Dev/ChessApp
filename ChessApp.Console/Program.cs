@@ -8,9 +8,9 @@ Console.WriteLine();
 try
 {
     // Crear posición desde coordenadas numéricas
-    ChessPosition pos1 = new ChessPosition(1, 1);  // a1 (fila 1, columna 1)
-    ChessPosition pos2 = new ChessPosition(2, 5);  // e2 (fila 2, columna 5)
-    ChessPosition pos3 = new ChessPosition(8, 8);  // h8 (fila 8, columna 8)
+    Position pos1 = new Position(1, 1);  // a1 (fila 1, columna 1)
+    Position pos2 = new Position(2, 5);  // e2 (fila 2, columna 5)
+    Position pos3 = new Position(8, 8);  // h8 (fila 8, columna 8)
 
     Console.WriteLine("Posiciones desde coordenadas numéricas:");
     Console.WriteLine($"Fila 1, Columna 1 = {pos1.AlgebraicNotation}");
@@ -19,9 +19,9 @@ try
     Console.WriteLine();
 
     // Crear posición desde notación algebraica
-    ChessPosition pos4 = new ChessPosition("a1");
-    ChessPosition pos5 = new ChessPosition("e4");
-    ChessPosition pos6 = new ChessPosition("h8");
+    Position pos4 = new Position("a1");
+    Position pos5 = new Position("e4");
+    Position pos6 = new Position("h8");
 
     Console.WriteLine("Posiciones desde notación algebraica:");
     Console.WriteLine($"a1 -> Fila {pos4.Row}, Columna {pos4.Column}");
@@ -40,7 +40,7 @@ try
     Console.WriteLine("Probando posiciones inválidas...");
     try
     {
-        ChessPosition invalid1 = new ChessPosition(0, 1);  // Fila 0 no existe
+        Position invalid1 = new Position(0, 1);  // Fila 0 no existe
     }
     catch (Exception ex)
     {
@@ -49,7 +49,7 @@ try
 
     try
     {
-        ChessPosition invalid2 = new ChessPosition("i9");  // Columna i no existe
+        Position invalid2 = new Position("i9");  // Columna i no existe
     }
     catch (Exception ex)
     {
@@ -58,7 +58,7 @@ try
 
     try
     {
-        ChessPosition invalid3 = new ChessPosition(5, 9);  // Columna 9 no existe
+        Position invalid3 = new Position(5, 9);  // Columna 9 no existe
     }
     catch (Exception ex)
     {

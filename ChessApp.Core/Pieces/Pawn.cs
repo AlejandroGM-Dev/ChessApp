@@ -10,10 +10,12 @@ namespace ChessApp.Core.Pieces
 {
     public class Pawn : Piece
     {
+        // Constructor que inicializa un Peon con el color especificado.
         public Pawn(PieceColor color) : base(color, PieceType.Pawn)
         {
         }
 
+        // Determina si el movimiento es valido segun las reglas del ajedrez.
         public override bool IsValidMove(Position from, Position to, Board board)
         {
             int direction = Color == PieceColor.White ? 1 : -1;

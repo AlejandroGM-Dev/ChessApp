@@ -1,4 +1,5 @@
-﻿using ChessApp.Core.Pieces;
+﻿using ChessApp.Core.Enums;
+using ChessApp.Core.Pieces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,48 @@ namespace ChessApp.Core.Models
         // Metodo privado para inicializar el tablero con las piezas en sus posiciones iniciales
         private void InitializeBoard()
         {
-            // Por ahora estara vacio
+            // Limpiar tablero
+            for (int row = 1; row <= 8; row++)
+            {
+                for (int col = 1; col <= 8; col++)
+                {
+                    Squares[row, col] = null;
+                }
+            }
+
+            // === COLOCAR PIEZAS BLANCAS (filas 1 y 2) ===
+
+            // Peones blancos en fila 2
+            for (int col = 1; col <= 8; col++)
+            {
+                Squares[2, col] = new Pawn(PieceColor.White);
+            }
+
+            // Piezas blancas en fila 1
+            Squares[1, 1] = new Rook(PieceColor.White);
+            Squares[1, 2] = new Knight(PieceColor.White);
+            Squares[1, 3] = new Bishop(PieceColor.White);
+            Squares[1, 4] = new Queen(PieceColor.White);
+            Squares[1, 5] = new King(PieceColor.White);
+            Squares[1, 6] = new Bishop(PieceColor.White);
+            Squares[1, 7] = new Knight(PieceColor.White);
+            Squares[1, 8] = new Rook(PieceColor.White);
+
+            // Peones negros en fila 7
+            for (int col = 1; col <= 8; col++)
+            {
+                Squares[7, col] = new Pawn(PieceColor.Black);
+            }
+
+            // Piezas negras en fila 8
+            Squares[8, 1] = new Rook(PieceColor.Black);
+            Squares[8, 2] = new Knight(PieceColor.Black);
+            Squares[8, 3] = new Bishop(PieceColor.Black);
+            Squares[8, 4] = new Queen(PieceColor.Black);
+            Squares[8, 5] = new King(PieceColor.Black);
+            Squares[8, 6] = new Bishop(PieceColor.Black);
+            Squares[8, 7] = new Knight(PieceColor.Black);
+            Squares[8, 8] = new Rook(PieceColor.Black);
         }
 
         // Devuelve la pieza en una posicion especifica del tablero
