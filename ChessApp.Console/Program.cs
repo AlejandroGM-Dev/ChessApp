@@ -1,4 +1,92 @@
-﻿using ChessApp.Core.Models;
+﻿using ChessApp.Core.Game;
+using ChessApp.Core.Models;
+
+Console.WriteLine("=== SISTEMA DE AJEDREZ COMPLETO ===");
+Console.WriteLine("Probando movimientos y capturas...");
+Console.WriteLine();
+
+// Crear una nueva partida
+ChessGame game = new ChessGame("Jugador1", "Jugador2");
+
+// Mostrar estado inicial
+Console.WriteLine($"Jugador actual: {game.CurrentPlayer}");
+Console.WriteLine($"Estado del juego: {game.Status}");
+Console.WriteLine();
+
+// Probar movimientos más simples primero
+Console.WriteLine("=== MOVIMIENTOS BÁSICOS DE PEONES ===");
+TestMove(game, "e2", "e4");  // Peón blanco avanza 2 casillas
+TestMove(game, "e7", "e5");  // Peón negro avanza 2 casillas
+
+Console.WriteLine("=== MOVIMIENTOS DE CABALLOS ===");
+TestMove(game, "g1", "f3");  // Caballo blanco se mueve
+TestMove(game, "b8", "c6");  // Caballo negro se mueve
+
+// Mostrar historial de movimientos
+Console.WriteLine();
+Console.WriteLine("=== HISTORIAL DE MOVIMIENTOS ===");
+var moveHistory = game.GetFormattedMoveHistory();
+foreach (string move in moveHistory)
+{
+    Console.WriteLine(move);
+}
+
+Console.WriteLine();
+Console.WriteLine("Prueba completada. Presiona cualquier tecla para salir.");
+Console.ReadKey();
+
+// Método helper para probar movimientos
+static void TestMove(ChessGame game, string fromAlgebraic, string toAlgebraic)
+{
+    try
+    {
+        Console.WriteLine($"--- Probando: {fromAlgebraic} -> {toAlgebraic} ---");
+
+        Position from = new Position(fromAlgebraic);
+        Position to = new Position(toAlgebraic);
+
+        Console.WriteLine($"Posición origen: Fila {from.Row}, Columna {from.Column}");
+        Console.WriteLine($"Posición destino: Fila {to.Row}, Columna {to.Column}");
+
+        // Verificar si hay pieza en origen
+        var pieceAtFrom = game.Board.GetPieceAt(from);
+        if (pieceAtFrom == null)
+        {
+            Console.WriteLine($"❌ No hay pieza en {fromAlgebraic}");
+            return;
+        }
+
+        Console.WriteLine($"Pieza en origen: {pieceAtFrom.Type} {pieceAtFrom.Color}");
+
+        MoveResult result = game.AttemptMove(from, to);
+
+        if (result.IsSuccess)
+        {
+            Console.WriteLine($"✅ {result.Message}");
+            Console.WriteLine($"   Movimiento: {result.Move.ToAlgebraicNotation()}");
+            Console.WriteLine($"   Jugador actual: {game.CurrentPlayer}");
+
+            if (result.Move.CapturedPiece != null)
+            {
+                Console.WriteLine($"   ¡Captura! Pieza capturada: {result.Move.CapturedPiece.Type}");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"❌ {result.Message}");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error: {ex.Message}");
+        Console.WriteLine($"   StackTrace: {ex.StackTrace}");
+    }
+    Console.WriteLine();
+}
+
+
+/* ---------------------------------------------------------------
+using ChessApp.Core.Models;
 
 Console.WriteLine("=== PRUEBA DE POSICIONES DE AJEDREZ ===");
 Console.WriteLine("Sistema de coordenadas: filas 1-8, columnas 1-8 (1=a, 2=b, ..., 8=h)");
@@ -73,3 +161,4 @@ catch (Exception ex)
 Console.WriteLine();
 Console.WriteLine("Prueba completada. Presiona cualquier tecla para salir.");
 Console.ReadKey();
+*/

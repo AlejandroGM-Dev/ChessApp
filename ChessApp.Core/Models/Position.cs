@@ -28,12 +28,20 @@ public class Position
             throw new ArgumentException("Notación algebraica inválida. Use formato como 'a1', 'e4'");
 
         AlgebraicNotation = algebraicNotation.ToLower();
-        Column = AlgebraicNotation[0] - 'a' + 1;  // 'a' -> 1, 'b' -> 2, etc.
-        Row = AlgebraicNotation[1] - '0';         // '1' -> 1, '2' -> 2, etc.
 
-        // Validar que esté dentro del tablero
-        if (Row < 1 || Row > 8 || Column < 1 || Column > 8)
-            throw new ArgumentException($"Posición fuera del tablero: {algebraicNotation}");
+        char columnChar = AlgebraicNotation[0];
+        char rowChar = AlgebraicNotation[1];
+
+        // Validar letra de columna
+        if (columnChar < 'a' || columnChar > 'h')
+            throw new ArgumentException($"Columna inválida: {columnChar}. Debe ser entre a-h");
+
+        // Validar fila
+        if (rowChar < '1' || rowChar > '8')
+            throw new ArgumentException($"Fila inválida: {rowChar}. Debe ser entre 1-8");
+
+        Column = columnChar - 'a' + 1;  // 'a' -> 1, 'b' -> 2, etc.
+        Row = rowChar - '0';           // '1' -> 1, '2' -> 2, etc.
     }
 
     // Método privado para convertir coordenadas numéricas a notación algebraica

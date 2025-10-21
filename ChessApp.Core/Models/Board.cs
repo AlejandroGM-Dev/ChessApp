@@ -71,6 +71,10 @@ namespace ChessApp.Core.Models
         // Devuelve la pieza en una posicion especifica del tablero
         public Piece GetPieceAt(Position position)
         {
+            // Verificar que la posición está dentro de los límites
+            if (position.Row < 1 || position.Row > 8 || position.Column < 1 || position.Column > 8)
+                return null;
+
             return Squares[position.Row, position.Column];
         }
 

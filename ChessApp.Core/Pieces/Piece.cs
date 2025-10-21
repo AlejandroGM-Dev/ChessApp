@@ -51,6 +51,10 @@ namespace ChessApp.Core.Pieces
             // Verificar cada casilla en el camino hasta llegar al destino
             while (currentRow != to.Row || currentCol != to.Column)
             {
+                // Verificar que la posición actual es válida
+                if (!Board.IsValidPosition(new Position(currentRow, currentCol)))
+                    return false;
+
                 Position currentPos = new Position(currentRow, currentCol);
                 if (board.GetPieceAt(currentPos) != null)
                     return false;

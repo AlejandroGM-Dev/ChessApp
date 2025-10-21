@@ -31,7 +31,7 @@ namespace ChessApp.Core.Game
         }
 
         // Metodo principal para intentar hacer un movimiento 
-        public MoveResult AttempMove(Position from, Position to)
+        public MoveResult AttemptMove(Position from, Position to)
         {
             // Verificar que el juego esta en progreso
             if (Status != GameStatus.InProgress)
@@ -66,7 +66,7 @@ namespace ChessApp.Core.Game
 
             // Verificar que no se capture una pieza del mismo color
             Piece targetPiece = Board.GetPieceAt(to);
-            if ( targetPiece == null && targetPiece.Color == CurrentPlayer)
+            if ( targetPiece != null && targetPiece.Color == CurrentPlayer)
             {
                 return MoveResult.Failure("No puedes capturar tus propias piezas");
             }
@@ -107,7 +107,7 @@ namespace ChessApp.Core.Game
         }
 
         // Obtener el historial de movimientos formateado
-        public List<string> GetFormmattedMoveHistory()
+        public List<string> GetFormattedMoveHistory()
         {
             var formattedMoves = new List<string>();
 
