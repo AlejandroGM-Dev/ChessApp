@@ -51,6 +51,12 @@ public class Position
         return $"{columnChar}{row}";
     }
 
+    // Método para obtener la letra de la columna (a-h)
+    public char GetColumnLetter()
+    {
+        return (char)('a' + (Column - 1));
+    }
+
     // Método para mostrar la posición en notación algebraica
     public override string ToString()
     {

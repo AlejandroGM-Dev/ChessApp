@@ -10,12 +10,15 @@ namespace ChessApp.Core.Models
 {
     public class Move
     {
-        public Position From {  get; set; }
+        public Position From { get; set; }
         public Position To { get; set; }
         public Piece Piece { get; set; }
         public Piece CapturedPiece { get; set; }
         public DateTime Timestamp { get; set; }
         public string AlgebraicNotation { get; set; }
+        public bool IsCheck { get; set; }
+        public bool IsCheckmate { get; set; }
+        public bool IsCapture { get; set; }
 
         public Move(Position from, Position to, Piece piece, Piece capturedPiece = null)
         {
@@ -24,19 +27,30 @@ namespace ChessApp.Core.Models
             Piece = piece;
             CapturedPiece = capturedPiece;
             Timestamp = DateTime.Now;
+            IsCapture = capturedPiece != null;
             AlgebraicNotation = ToAlgebraicNotation();
         }
 
         public string ToAlgebraicNotation()
         {
-            // Para peones, solo mostramos la casilla de destino
+            string notation;
+
             if (Piece.Type == PieceType.Pawn)
             {
-                return To.ToString();
+                notation = IsCapture ? $"{From.GetColumnLetter()}x{To}" : To.ToString();
+            }
+            else
+            {
+                notation = IsCapture ? $"{Piece.GetSymbol()}x{To}" : $"{Piece.GetSymbol()}{To}";
             }
 
-            // Para otras piezas usamos el simbolo y la casilla de destino
-            return $"{Piece.GetSymbol()}{To}";
+            // Agregar símbolos de jaque y jaque mate
+            if (IsCheckmate)
+                notation += "#";
+            else if (IsCheck)
+                notation += "+";
+
+            return notation;
         }
 
         public override string ToString()

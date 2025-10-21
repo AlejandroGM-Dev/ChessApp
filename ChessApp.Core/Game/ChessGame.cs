@@ -84,26 +84,63 @@ namespace ChessApp.Core.Game
             Board.PlacePieceAt(piece, to);
             Board.PlacePieceAt(null, from);
 
-            // Marcar que la pieza se ha movido (para peones, enroque, etc.)
+            // Marcar que la pieza se ha movido
             piece.HasMoved = true;
 
-            // Agregar el movimiento al historial
+            // Verificar si el movimiento resulta en jaque
+            PieceColor opponentColor = CurrentPlayer == PieceColor.White ? PieceColor.Black : PieceColor.White;
+            move.IsCheck = CheckValidator.IsKingInCheck(Board, opponentColor);
+
+            // Agregar al historial
             MoveHistory.Add(move);
 
             // Cambiar turno
             CurrentPlayer = (CurrentPlayer == PieceColor.White) ? PieceColor.Black : PieceColor.White;
 
-
-            // Verificar estado del juego (jaque, jaque mate, etc.)
+            // Verificar estado del juego
             UpdateGameStatus();
+
+            // Si hay jaque mate, actualizar el movimiento
+            if (Status == GameStatus.WhiteCheckMate || Status == GameStatus.BlackCheckMate)
+            {
+                move.IsCheckmate = true;
+            }
+
             return MoveResult.Success("Movimiento exitoso", move);
         }
 
         private void UpdateGameStatus()
         {
-            // Por ahora, implementacion basica
-            // En el futuro, aqui ira la logica para detectar jaque y jaque mate
-            Status = GameStatus.InProgress;
+            // Verificar jaque
+            bool whiteInCheck = CheckValidator.IsKingInCheck(Board, PieceColor.White);
+            bool blackInCheck = CheckValidator.IsKingInCheck(Board, PieceColor.Black);
+
+            if (whiteInCheck)
+            {
+                if (CheckValidator.IsCheckmate(Board, PieceColor.White))
+                {
+                    Status = GameStatus.WhiteCheckMate;
+                }
+                else
+                {
+                    Status = GameStatus.WhiteCheck;
+                }
+            }
+            else if (blackInCheck)
+            {
+                if (CheckValidator.IsCheckmate(Board, PieceColor.Black))
+                {
+                    Status = GameStatus.BlackCheckMate;
+                }
+                else
+                {
+                    Status = GameStatus.BlackCheck;
+                }
+            }
+            else
+            {
+                Status = GameStatus.InProgress;
+            }
         }
 
         // Obtener el historial de movimientos formateado
@@ -125,7 +162,7 @@ namespace ChessApp.Core.Game
                 else
                 {
                     // Si el movimiento es de las negras, agregarlo al ultimo elemento
-                    formattedMoves[formattedMoves.Count - 1] += $"{ moveNumber}";
+                    formattedMoves[formattedMoves.Count - 1] += $" {moveText}";
                 }
             }
             return formattedMoves;
