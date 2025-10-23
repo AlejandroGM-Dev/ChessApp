@@ -31,18 +31,25 @@ namespace ChessApp.Core.Pieces
             if (!HasMoved && from.Row == startRow && to.Column == from.Column && to.Row == from.Row + (2 * direction))
             {
                 Position intermediate = new Position(from.Row + direction, from.Column);
-                
+
                 return board.GetPieceAt(intermediate) == null && board.GetPieceAt(to) == null;
             }
 
             // Captura en diagnonal
             if (Math.Abs(to.Column - from.Column) == 1 && to.Row == from.Row + direction)
             {
-                Piece target = board.GetPieceAt(to);
+                Piece? target = board.GetPieceAt(to);
                 return target != null && target.Color != Color;
             }
 
             return false;
+        }
+
+        // Metodo para comprobar si el movimiento resulta en promocion
+        public bool IsPromotionMove(Position targetPosition)
+        {
+            return (Color == PieceColor.White && targetPosition.Row == 8) ||
+                   (Color == PieceColor.Black && targetPosition.Row == 1);
         }
     }
 }

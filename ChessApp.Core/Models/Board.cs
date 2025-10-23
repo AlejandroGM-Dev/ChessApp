@@ -12,12 +12,12 @@ namespace ChessApp.Core.Models
     public class Board
     {
         // Matriz que representa el tablero de ajedrez donde cada celda puede o no contener una pieza de ajedrez
-        public Piece[,] Squares {get; private set;}
+        public Piece?[,] Squares {get; private set;}
 
         // Constructor de tablero. Inicializa la matriz y llama a la funcion de inicializacion
         public Board() 
         {
-            Squares = new Piece[9, 9]; // Se usa 9x9 para tener indices del 1 al 8
+            Squares = new Piece?[9, 9]; // Se usa 9x9 para tener indices del 1 al 8
             InitializeBoard();
         }
 
@@ -69,7 +69,7 @@ namespace ChessApp.Core.Models
         }
 
         // Devuelve la pieza en una posicion especifica del tablero
-        public Piece GetPieceAt(Position position)
+        public Piece? GetPieceAt(Position position)
         {
             // Verificar que la posición está dentro de los límites
             if (position.Row < 1 || position.Row > 8 || position.Column < 1 || position.Column > 8)
@@ -79,7 +79,7 @@ namespace ChessApp.Core.Models
         }
 
         // Coloca una pieza en una posicion especifica del tablero
-        public void PlacePieceAt(Piece piece, Position position)
+        public void PlacePieceAt(Piece? piece, Position position)
         {
             Squares[position.Row, position.Column] = piece;
         }

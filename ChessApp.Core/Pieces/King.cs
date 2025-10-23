@@ -26,7 +26,7 @@ namespace ChessApp.Core.Pieces
             if (rowDiff <= 1 && colDiff <= 1)
             {
                 // Verificar destino: vacío o pieza enemiga
-                Piece target = board.GetPieceAt(to);
+                Piece? target = board.GetPieceAt(to);
                 return target == null || target.Color != Color;
             }
 
@@ -48,7 +48,7 @@ namespace ChessApp.Core.Pieces
 
             // Verificar que la torre existe y no se ha movido
             Position rookPosition = new Position(from.Row, rookColumn);
-            Piece rook = board.GetPieceAt(rookPosition);
+            Piece? rook = board.GetPieceAt(rookPosition);
 
             if (rook == null || rook.Type != PieceType.Rook || rook.Color != Color || rook.HasMoved)
                 return false;
@@ -79,7 +79,7 @@ namespace ChessApp.Core.Pieces
         private bool WouldBeInCheckAfterMove(Board board, Position from, Position to)
         {
             // Simular movimiento temporal
-            Piece originalPiece = board.GetPieceAt(to);
+            Piece? originalPiece = board.GetPieceAt(to);
             board.PlacePieceAt(this, to);
             board.PlacePieceAt(null, from);
 

@@ -10,9 +10,9 @@ namespace ChessApp.Core.Models
     {
         public bool IsSuccess { get; set; }
         public string Message { get; set; }
-        public Move Move { get; set; }
+        public Move? Move { get; set; }
 
-        public MoveResult (bool isSuccess, string message, Move move = null)
+        public MoveResult (bool isSuccess, string message, Move? move = null)
         {
             IsSuccess = isSuccess;
             Message = message;

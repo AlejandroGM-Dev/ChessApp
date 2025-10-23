@@ -27,7 +27,7 @@ namespace ChessApp.Core.Pieces
                 return false;
 
             // El caballo puede saltar, solo verificar destino
-            Piece target = board.GetPieceAt(to);
+            Piece? target = board.GetPieceAt(to);
             return target == null || target.Color != Color;
 
         }

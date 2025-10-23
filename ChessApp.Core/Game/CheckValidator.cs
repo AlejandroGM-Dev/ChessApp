@@ -15,7 +15,7 @@ namespace ChessApp.Core.Game
         public static bool IsKingInCheck(Board board, PieceColor kingColor)
         {
             // Encontrar la posición del rey
-            Position kingPosition = FindKingPosition(board, kingColor);
+            Position? kingPosition = FindKingPosition(board, kingColor);
             if (kingPosition == null) return false;
 
             // Verificar si alguna pieza enemiga puede capturar al rey
@@ -26,7 +26,7 @@ namespace ChessApp.Core.Game
                 for (int col = 1; col <= 8; col++)
                 {
                     Position position = new Position(row, col);
-                    Piece piece = board.GetPieceAt(position);
+                    Piece? piece = board.GetPieceAt(position);
 
                     if (piece != null && piece.Color == enemyColor)
                     {
@@ -49,7 +49,7 @@ namespace ChessApp.Core.Game
                 for (int col = 1; col <= 8; col++)
                 {
                     Position position = new Position(row, col);
-                    Piece piece = board.GetPieceAt(position);
+                    Piece? piece = board.GetPieceAt(position);
 
                     if (piece != null && piece.Type == PieceType.King && piece.Color == kingColor)
                     {
@@ -73,7 +73,7 @@ namespace ChessApp.Core.Game
                 for (int fromCol = 1; fromCol <= 8; fromCol++)
                 {
                     Position from = new Position(fromRow, fromCol);
-                    Piece piece = board.GetPieceAt(from);
+                    Piece? piece = board.GetPieceAt(from);
 
                     if (piece != null && piece.Color == playerColor)
                     {
@@ -112,8 +112,8 @@ namespace ChessApp.Core.Game
         // Simular un movimiento temporal para verificar jaque
         private static Piece? SimulateMove(Board board, Position from, Position to)
         {
-            Piece movingPiece = board.GetPieceAt(from);
-            Piece capturedPiece = board.GetPieceAt(to);
+            Piece? movingPiece = board.GetPieceAt(from);
+            Piece? capturedPiece = board.GetPieceAt(to);
 
             board.PlacePieceAt(movingPiece, to);
             board.PlacePieceAt(null, from);
@@ -124,7 +124,7 @@ namespace ChessApp.Core.Game
         // Revertir un movimiento simulado
         private static void RevertMove(Board board, Position from, Position to, Piece? capturedPiece)
         {
-            Piece movingPiece = board.GetPieceAt(to);
+            Piece? movingPiece = board.GetPieceAt(to);
             board.PlacePieceAt(movingPiece, from);
             board.PlacePieceAt(capturedPiece, to);
         }

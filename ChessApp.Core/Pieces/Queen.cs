@@ -31,7 +31,7 @@ namespace ChessApp.Core.Pieces
                 return false;
 
             // Verificar destino
-            Piece target = board.GetPieceAt(to);
+            Piece? target = board.GetPieceAt(to);
             return target == null || target.Color != Color;
         }
     }

@@ -31,7 +31,7 @@ namespace ChessApp.Core.Pieces
                 return false;
 
             // Verificar captura: puede mover a casilla vacia o capturar pieza
-            Piece targetPiece = board.GetPieceAt(to);
+            Piece? targetPiece = board.GetPieceAt(to);
             return targetPiece == null || targetPiece.Color != this.Color;
         }
     }

@@ -13,15 +13,17 @@ namespace ChessApp.Core.Models
         public Position From { get; set; }
         public Position To { get; set; }
         public Piece Piece { get; set; }
-        public Piece CapturedPiece { get; set; }
+        public Piece? CapturedPiece { get; set; }
         public DateTime Timestamp { get; set; }
         public string AlgebraicNotation { get; set; }
         public bool IsCheck { get; set; }
         public bool IsCheckmate { get; set; }
         public bool IsCapture { get; set; }
         public bool IsCastling { get; set; }
+        public bool IsPromotion { get; set; }
+        public PieceType? PromotedPieceType{ get; set; }
 
-        public Move(Position from, Position to, Piece piece, Piece capturedPiece = null)
+        public Move(Position from, Position to, Piece piece, Piece? capturedPiece = null)
         {
             From = from;
             To = to;
@@ -46,6 +48,12 @@ namespace ChessApp.Core.Models
             if (Piece.Type == PieceType.Pawn)
             {
                 notation = IsCapture ? $"{From.GetColumnLetter()}x{To}" : To.ToString();
+
+                if (IsPromotion && PromotedPieceType.HasValue)
+                {
+                    string promotionSymbol = GetPieceSymbol(PromotedPieceType.Value);
+                    notation += $"={promotionSymbol}";
+                }
             }
             else
             {
@@ -59,6 +67,18 @@ namespace ChessApp.Core.Models
                 notation += "+";
 
             return notation;
+        }
+
+        private string GetPieceSymbol(PieceType pieceType)
+        {
+            return pieceType switch
+            {
+                PieceType.Queen => "Q",
+                PieceType.Rook => "R",
+                PieceType.Bishop => "B",
+                PieceType.Knight => "N",
+                _ => "Q" // Default to queen
+            };
         }
 
         public override string ToString()

@@ -31,7 +31,7 @@ namespace ChessApp.Core.Game
         }
 
         // Metodo principal para intentar hacer un movimiento 
-        public MoveResult AttemptMove(Position from, Position to)
+        public MoveResult AttemptMove(Position from, Position to, PieceType? promotionPiece = null)
         {
             // Verificar que el juego esta en progreso
             if (Status != GameStatus.InProgress)
@@ -46,7 +46,7 @@ namespace ChessApp.Core.Game
             }
 
             // Obtener la pieza en la posicion de origen
-            Piece piece = Board.GetPieceAt(from);
+            Piece? piece = Board.GetPieceAt(from);
             if ( piece == null)
             {
                 return MoveResult.Failure("No hay pieza en la posicion de origen");
@@ -65,24 +65,50 @@ namespace ChessApp.Core.Game
             }
 
             // Verificar que no se capture una pieza del mismo color
-            Piece targetPiece = Board.GetPieceAt(to);
+            Piece? targetPiece = Board.GetPieceAt(to);
             if ( targetPiece != null && targetPiece.Color == CurrentPlayer)
             {
                 return MoveResult.Failure("No puedes capturar tus propias piezas");
             }
 
+            // Verificar la promoción de un peon
+            bool isPromotion = piece.Type == PieceType.Pawn && ((Pawn)piece).IsPromotionMove(to);
+            if (isPromotion && !promotionPiece.HasValue)
+            {
+                return MoveResult.Failure("Promotion piece must be specified for pawn promotion");
+            }
+
+            // Si la promocion es especificada y verificada y pro tanto valida
+            if (promotionPiece.HasValue && !IsValidPromotionPiece(promotionPiece.Value))
+            {
+                return MoveResult.Failure("Invalid promotion piece");
+            }
+
             // Si todas las validaciones pasan, ejecutar el movimiento
-            return ExecuteMove(from, to, piece, targetPiece);
+            return ExecuteMove(from, to, piece, targetPiece, promotionPiece);
         }
 
-        private MoveResult ExecuteMove(Position from, Position to, Piece piece, Piece capturedPiece)
+        private MoveResult ExecuteMove(Position from, Position to, Piece piece, Piece capturedPiece, PieceType? promotionPiece = null)
         {
             // Verificar si es un enroque
             bool isCastling = piece.Type == PieceType.King && Math.Abs(to.Column - from.Column) == 2;
 
+            // Verificar si es una promocion
+            bool isPromotion = piece.Type == PieceType.Pawn &&
+                      ((piece.Color == PieceColor.White && to.Row == 8) ||
+                       (piece.Color == PieceColor.Black && to.Row == 1));
+
+            if (isPromotion && !promotionPiece.HasValue)
+            {
+                promotionPiece = PieceType.Queen;
+            }
+
+
             // Crear el objeto Move
             Move move = new Move(from, to, piece, capturedPiece);
             move.IsCastling = isCastling;
+            move.IsPromotion = isPromotion;
+            move.PromotedPieceType = promotionPiece;
 
             // Actualizar el tablero
             Board.PlacePieceAt(piece, to);
@@ -92,6 +118,14 @@ namespace ChessApp.Core.Game
             if (isCastling)
             {
                 ExecuteCastling(from, to);
+            }
+
+            // Ejecutar promocion si es necesario
+            if (isPromotion)
+            {
+                // Usar Queen como valor por defecto si promotionPiece es null
+                PieceType pieceToPromote = promotionPiece ?? PieceType.Queen;
+                ExecutePromotion(to, pieceToPromote);
             }
 
             // Marcar que la pieza se ha movido
@@ -128,12 +162,65 @@ namespace ChessApp.Core.Game
             Position rookFrom = new Position(kingFrom.Row, rookFromColumn);
             Position rookTo = new Position(kingFrom.Row, rookToColumn);
 
-            Piece rook = Board.GetPieceAt(rookFrom);
+            Piece? rook = Board.GetPieceAt(rookFrom);
             Board.PlacePieceAt(rook, rookTo);
             Board.PlacePieceAt(null, rookFrom);
 
             // Marcar que la torre se ha movido
             rook.HasMoved = true;
+        }
+
+        private void ExecutePromotion(Position position, PieceType promotionPiece)
+        {
+            Piece? currentPiece = Board.GetPieceAt(position);
+            if (currentPiece == null)
+            {
+                System.Console.WriteLine("ERROR: No hay pieza en la posición de promoción");
+                return;
+            }
+
+            if (currentPiece.Type != PieceType.Pawn)
+            {
+                System.Console.WriteLine($"ERROR: Intento de promover una pieza que no es un peón: {currentPiece.Type}");
+                return;
+            }
+
+            Piece promotedPiece = CreatePromotedPiece(promotionPiece, CurrentPlayer);
+            Board.PlacePieceAt(promotedPiece, position);
+
+            System.Console.WriteLine($"✓ Promoción ejecutada: Peón en {position} -> {promotionPiece}");
+        }
+
+        private Piece CreatePromotedPiece(PieceType pieceType, PieceColor color)
+        {
+            return pieceType switch
+            {
+                PieceType.Queen => new Queen(color),
+                PieceType.Rook => new Rook(color),
+                PieceType.Bishop => new Bishop(color),
+                PieceType.Knight => new Knight(color),
+                _ => new Queen(color) // Default to queen
+            };
+        }
+
+        private bool IsValidPromotionPiece(PieceType pieceType)
+        {
+            return pieceType == PieceType.Queen ||
+                   pieceType == PieceType.Rook ||
+                   pieceType == PieceType.Bishop ||
+                   pieceType == PieceType.Knight;
+        }
+
+        // Metodo para traer las opciones validas para promocion
+        public List<PieceType> GetValidPromotionOptions()
+        {
+            return new List<PieceType>
+            {
+                PieceType.Queen,
+                PieceType.Rook,
+                PieceType.Bishop,
+                PieceType.Knight
+            };
         }
 
         private void UpdateGameStatus()
