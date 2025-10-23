@@ -42,28 +42,40 @@ namespace ChessApp.Core.Pieces
         // Metodo para verificar si el camino está libre (Para torres, alfiles y reinas)
         protected bool IsPathClear(Position from, Position to, Board board)
         {
-            int rowStep = Math.Sign(to.Row - from.Row);
-            int colStep = Math.Sign(to.Column - from.Column);
-
-            int currentRow = from.Row + rowStep;
-            int currentCol = from.Column + colStep;
-
-            // Verificar cada casilla en el camino hasta llegar al destino
-            while (currentRow != to.Row || currentCol != to.Column)
+            try
             {
-                // Verificar que la posición actual es válida
-                if (!Board.IsValidPosition(new Position(currentRow, currentCol)))
-                    return false;
+                int rowStep = Math.Sign(to.Row - from.Row);
+                int colStep = Math.Sign(to.Column - from.Column);
 
-                Position currentPos = new Position(currentRow, currentCol);
-                if (board.GetPieceAt(currentPos) != null)
-                    return false;
+                int currentRow = from.Row + rowStep;
+                int currentCol = from.Column + colStep;
 
-                currentRow += rowStep;
-                currentCol += colStep;
+                // Para debugging
+                // Console.WriteLine($"  DEBUG IsPathClear: from={from}, to={to}, rowStep={rowStep}, colStep={colStep}");
+
+                while (currentRow != to.Row || currentCol != to.Column)
+                {
+                    Position currentPos = new Position(currentRow, currentCol);
+                    // Console.WriteLine($"  DEBUG Checking position: {currentPos}");
+
+                    if (board.GetPieceAt(currentPos) != null)
+                    {
+                        // Console.WriteLine($"  DEBUG Blocked at {currentPos}");
+                        return false;
+                    }
+
+                    currentRow += rowStep;
+                    currentCol += colStep;
+                }
+
+                return true;
             }
-
-            return true;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  ERROR in IsPathClear: {ex.Message}");
+                return false;
+            }
         }
+
     }
 }

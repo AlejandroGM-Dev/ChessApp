@@ -77,12 +77,22 @@ namespace ChessApp.Core.Game
 
         private MoveResult ExecuteMove(Position from, Position to, Piece piece, Piece capturedPiece)
         {
+            // Verificar si es un enroque
+            bool isCastling = piece.Type == PieceType.King && Math.Abs(to.Column - from.Column) == 2;
+
             // Crear el objeto Move
             Move move = new Move(from, to, piece, capturedPiece);
+            move.IsCastling = isCastling;
 
             // Actualizar el tablero
             Board.PlacePieceAt(piece, to);
             Board.PlacePieceAt(null, from);
+
+            // Ejecutar enroque si es necesario
+            if (isCastling)
+            {
+                ExecuteCastling(from, to);
+            }
 
             // Marcar que la pieza se ha movido
             piece.HasMoved = true;
@@ -107,6 +117,23 @@ namespace ChessApp.Core.Game
             }
 
             return MoveResult.Success("Movimiento exitoso", move);
+        }
+
+        private void ExecuteCastling(Position kingFrom, Position kingTo)
+        {
+            bool isKingside = kingTo.Column > kingFrom.Column;
+            int rookFromColumn = isKingside ? 8 : 1;
+            int rookToColumn = isKingside ? kingTo.Column - 1 : kingTo.Column + 1;
+
+            Position rookFrom = new Position(kingFrom.Row, rookFromColumn);
+            Position rookTo = new Position(kingFrom.Row, rookToColumn);
+
+            Piece rook = Board.GetPieceAt(rookFrom);
+            Board.PlacePieceAt(rook, rookTo);
+            Board.PlacePieceAt(null, rookFrom);
+
+            // Marcar que la torre se ha movido
+            rook.HasMoved = true;
         }
 
         private void UpdateGameStatus()

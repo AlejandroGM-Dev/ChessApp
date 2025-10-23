@@ -19,6 +19,7 @@ namespace ChessApp.Core.Models
         public bool IsCheck { get; set; }
         public bool IsCheckmate { get; set; }
         public bool IsCapture { get; set; }
+        public bool IsCastling { get; set; }
 
         public Move(Position from, Position to, Piece piece, Piece capturedPiece = null)
         {
@@ -33,6 +34,13 @@ namespace ChessApp.Core.Models
 
         public string ToAlgebraicNotation()
         {
+            // Notación especial para enroque
+            if (IsCastling)
+            {
+                return To.Column > From.Column ? "O-O" : "O-O-O"; // O-O (corto) / O-O-O (largo)
+            }
+
+
             string notation;
 
             if (Piece.Type == PieceType.Pawn)

@@ -1,41 +1,7 @@
 ﻿using ChessApp.Core.Game;
 using ChessApp.Core.Models;
 
-Console.WriteLine("=== SISTEMA DE AJEDREZ COMPLETO ===");
-Console.WriteLine("Probando movimientos y capturas...");
-Console.WriteLine();
-
-// Crear una nueva partida
-ChessGame game = new ChessGame("Jugador1", "Jugador2");
-
-// Mostrar estado inicial
-Console.WriteLine($"Jugador actual: {game.CurrentPlayer}");
-Console.WriteLine($"Estado del juego: {game.Status}");
-Console.WriteLine();
-
-// Probar movimientos más simples primero
-Console.WriteLine("=== MOVIMIENTOS BÁSICOS DE PEONES ===");
-TestMove(game, "e2", "e4");  // Peón blanco avanza 2 casillas
-TestMove(game, "e7", "e5");  // Peón negro avanza 2 casillas
-
-Console.WriteLine("=== MOVIMIENTOS DE CABALLOS ===");
-TestMove(game, "g1", "f3");  // Caballo blanco se mueve
-TestMove(game, "b8", "c6");  // Caballo negro se mueve
-
-// Mostrar historial de movimientos
-Console.WriteLine();
-Console.WriteLine("=== HISTORIAL DE MOVIMIENTOS ===");
-var moveHistory = game.GetFormattedMoveHistory();
-foreach (string move in moveHistory)
-{
-    Console.WriteLine(move);
-}
-
-Console.WriteLine();
-Console.WriteLine("Prueba completada. Presiona cualquier tecla para salir.");
-Console.ReadKey();
-
-// Método helper para probar movimientos
+// Método helper para probar movimientos (debe estar definido antes de usarse)
 static void TestMove(ChessGame game, string fromAlgebraic, string toAlgebraic)
 {
     try
@@ -70,6 +36,11 @@ static void TestMove(ChessGame game, string fromAlgebraic, string toAlgebraic)
             {
                 Console.WriteLine($"   ¡Captura! Pieza capturada: {result.Move.CapturedPiece.Type}");
             }
+
+            if (result.Move.IsCastling)
+            {
+                Console.WriteLine($"   ¡Enroque! ({result.Move.ToAlgebraicNotation()})");
+            }
         }
         else
         {
@@ -83,6 +54,205 @@ static void TestMove(ChessGame game, string fromAlgebraic, string toAlgebraic)
     }
     Console.WriteLine();
 }
+
+Console.WriteLine("=== SISTEMA DE AJEDREZ COMPLETO ===");
+Console.WriteLine("Probando movimientos y capturas...");
+Console.WriteLine();
+
+// Crear una nueva partida
+ChessGame game = new ChessGame("Jugador1", "Jugador2");
+
+// Mostrar estado inicial
+Console.WriteLine($"Jugador actual: {game.CurrentPlayer}");
+Console.WriteLine($"Estado del juego: {game.Status}");
+Console.WriteLine();
+
+// Probar movimientos más simples primero
+Console.WriteLine("=== MOVIMIENTOS BÁSICOS DE PEONES ===");
+TestMove(game, "e2", "e4");  // Peón blanco avanza 2 casillas
+TestMove(game, "e7", "e5");  // Peón negro avanza 2 casillas
+
+Console.WriteLine("=== MOVIMIENTOS DE CABALLOS ===");
+TestMove(game, "g1", "f3");  // Caballo blanco se mueve
+TestMove(game, "b8", "c6");  // Caballo negro se mueve
+
+// Mostrar historial de movimientos
+Console.WriteLine();
+Console.WriteLine("=== HISTORIAL DE MOVIMIENTOS ===");
+var moveHistory = game.GetFormattedMoveHistory();
+foreach (string move in moveHistory)
+{
+    Console.WriteLine(move);
+}
+
+Console.WriteLine();
+Console.WriteLine("=== PRUEBA DE ALFILES ===");
+
+// Crear nueva partida para probar alfiles
+ChessGame bishopGame = new ChessGame("Test Blanco", "Test Negro");
+
+// Preparar tablero moviendo peones para liberar a los alfiles
+TestMove(bishopGame, "d2", "d4");
+TestMove(bishopGame, "d7", "d5");
+
+// Probar movimiento de alfil blanco
+Console.WriteLine("--- Movimiento de alfil blanco ---");
+TestMove(bishopGame, "c1", "f4"); // Alfil blanco de c1 a f4
+
+// Probar movimiento de alfil negro  
+Console.WriteLine("--- Movimiento de alfil negro ---");
+TestMove(bishopGame, "c8", "f5"); // Alfil negro de c8 a f5
+
+Console.WriteLine();
+Console.WriteLine("=== PRUEBA DE ENROQUE SIMPLIFICADA ===");
+
+// Crear nueva partida para enroque
+ChessGame castlingGame = new ChessGame("Enroque Blanco", "Enroque Negro");
+
+// Movimientos mínimos para enroque
+Console.WriteLine("Preparando para enroque...");
+TestMove(castlingGame, "e2", "e4");
+TestMove(castlingGame, "e7", "e5");
+TestMove(castlingGame, "g1", "f3");
+TestMove(castlingGame, "b8", "c6");
+TestMove(castlingGame, "f1", "e2"); // Alfil se mueve para liberar enroque
+TestMove(castlingGame, "f8", "e7"); // Alfil negro se mueve
+
+// Intentar enroque
+Console.WriteLine("--- Intentando enroque ---");
+TestMove(castlingGame, "e1", "g1"); // Enroque corto
+
+Console.WriteLine();
+Console.WriteLine("Prueba completada. Presiona cualquier tecla para salir.");
+Console.ReadKey();
+
+
+//using ChessApp.Core.Game;
+//using ChessApp.Core.Models;
+
+//Console.WriteLine("=== SISTEMA DE AJEDREZ COMPLETO ===");
+//Console.WriteLine("Probando movimientos y capturas...");
+//Console.WriteLine();
+
+//// Crear una nueva partida
+//ChessGame game = new ChessGame("Jugador1", "Jugador2");
+
+//// Mostrar estado inicial
+//Console.WriteLine($"Jugador actual: {game.CurrentPlayer}");
+//Console.WriteLine($"Estado del juego: {game.Status}");
+//Console.WriteLine();
+
+//// Probar movimientos más simples primero
+//Console.WriteLine("=== MOVIMIENTOS BÁSICOS DE PEONES ===");
+//TestMove(game, "e2", "e4");  // Peón blanco avanza 2 casillas
+//TestMove(game, "e7", "e5");  // Peón negro avanza 2 casillas
+
+//Console.WriteLine("=== MOVIMIENTOS DE CABALLOS ===");
+//TestMove(game, "g1", "f3");  // Caballo blanco se mueve
+//TestMove(game, "b8", "c6");  // Caballo negro se mueve
+
+//// Mostrar historial de movimientos
+//Console.WriteLine();
+//Console.WriteLine("=== HISTORIAL DE MOVIMIENTOS ===");
+//var moveHistory = game.GetFormattedMoveHistory();
+//foreach (string move in moveHistory)
+//{
+//    Console.WriteLine(move);
+//}
+
+//Console.WriteLine();
+//Console.WriteLine("=== PRUEBA SIMPLIFICADA DE ENROQUE ===");
+
+//// Crear nueva partida para probar enroque
+//ChessGame castlingGame = new ChessGame("Test Blanco", "Test Negro");
+
+//// Solo movimientos esenciales para enroque
+//Console.WriteLine("Preparando tablero para enroque...");
+//TestMove(castlingGame, "e2", "e4");
+//TestMove(castlingGame, "e7", "e5");
+//TestMove(castlingGame, "g1", "f3");
+//TestMove(castlingGame, "b8", "c6");
+//TestMove(castlingGame, "f1", "c4");
+//TestMove(castlingGame, "f8", "c5");
+
+//// Intentar enroque corto (kingside)
+//Console.WriteLine("--- Intentando enroque corto blanco ---");
+//TestMove(castlingGame, "e1", "g1"); // Enroque corto blanco
+
+//// Mostrar resultado
+//Console.WriteLine($"Estado del juego: {castlingGame.Status}");
+//if (castlingGame.MoveHistory.Count > 0)
+//{
+//    var lastMove = castlingGame.MoveHistory.Last();
+//    Console.WriteLine($"¿Enroque exitoso? {lastMove.IsCastling}");
+//    Console.WriteLine($"Último movimiento: {lastMove.ToAlgebraicNotation()}");
+//}
+
+//// Mostrar historial final
+//Console.WriteLine("=== HISTORIAL FINAL ===");
+//var finalHistory = castlingGame.GetFormattedMoveHistory();
+//foreach (string move in finalHistory)
+//{
+//    Console.WriteLine(move);
+//}
+
+//Console.WriteLine();
+//Console.WriteLine("Prueba completada. Presiona cualquier tecla para salir.");
+//Console.ReadKey();
+
+//// Método helper para probar movimientos
+//static void TestMove(ChessGame game, string fromAlgebraic, string toAlgebraic)
+//{
+//    try
+//    {
+//        Console.WriteLine($"--- Probando: {fromAlgebraic} -> {toAlgebraic} ---");
+
+//        Position from = new Position(fromAlgebraic);
+//        Position to = new Position(toAlgebraic);
+
+//        Console.WriteLine($"Posición origen: Fila {from.Row}, Columna {from.Column}");
+//        Console.WriteLine($"Posición destino: Fila {to.Row}, Columna {to.Column}");
+
+//        // Verificar si hay pieza en origen
+//        var pieceAtFrom = game.Board.GetPieceAt(from);
+//        if (pieceAtFrom == null)
+//        {
+//            Console.WriteLine($"❌ No hay pieza en {fromAlgebraic}");
+//            return;
+//        }
+
+//        Console.WriteLine($"Pieza en origen: {pieceAtFrom.Type} {pieceAtFrom.Color}");
+
+//        MoveResult result = game.AttemptMove(from, to);
+
+//        if (result.IsSuccess)
+//        {
+//            Console.WriteLine($"✅ {result.Message}");
+//            Console.WriteLine($"   Movimiento: {result.Move.ToAlgebraicNotation()}");
+//            Console.WriteLine($"   Jugador actual: {game.CurrentPlayer}");
+
+//            if (result.Move.CapturedPiece != null)
+//            {
+//                Console.WriteLine($"   ¡Captura! Pieza capturada: {result.Move.CapturedPiece.Type}");
+//            }
+
+//            if (result.Move.IsCastling)
+//            {
+//                Console.WriteLine($"   ¡Enroque! ({result.Move.ToAlgebraicNotation()})");
+//            }
+//        }
+//        else
+//        {
+//            Console.WriteLine($"❌ {result.Message}");
+//        }
+//    }
+//    catch (Exception ex)
+//    {
+//        Console.WriteLine($"❌ Error: {ex.Message}");
+//        Console.WriteLine($"   StackTrace: {ex.StackTrace}");
+//    }
+//    Console.WriteLine();
+//}
 
 
 /* ---------------------------------------------------------------

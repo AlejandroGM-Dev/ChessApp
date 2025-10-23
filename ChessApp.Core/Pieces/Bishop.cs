@@ -26,7 +26,7 @@ namespace ChessApp.Core.Pieces
                 return false;
 
             // Verificar que el camino este libre
-            if (IsPathClear(from, to, board))
+            if (!IsPathClear(from, to, board))
                 return false;
 
             // Verificar destino
