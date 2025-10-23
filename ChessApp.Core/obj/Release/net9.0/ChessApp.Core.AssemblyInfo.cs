@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ChessApp.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1b34e51b8c302d0786fc20c1c44ab9bcfd930dc6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d150936affa6632f915b536042b420b9d90ca59")]
 [assembly: System.Reflection.AssemblyProductAttribute("ChessApp.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ChessApp.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

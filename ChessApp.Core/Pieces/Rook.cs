@@ -30,9 +30,38 @@ namespace ChessApp.Core.Pieces
             if (!IsPathClear(from, to, board))
                 return false;
 
-            // Verificar captura: puede mover a casilla vacia o capturar pieza
+            // Verificar captura: puede mover a casilla vacia o capturar pieza enemiga
             Piece? targetPiece = board.GetPieceAt(to);
             return targetPiece == null || targetPiece.Color != this.Color;
+        }
+
+        // Metodo mejorado para verificar que el camino esta libre
+        protected new bool IsPathClear(Position from, Position to, Board board)
+        {
+            int rowStep = Math.Sign(to.Row - from.Row);
+            int colStep = Math.Sign(to.Column - from.Column);
+
+            // Para movimiento horizontal o vertical, uno de los steps debe ser 0
+            if (rowStep != 0 && colStep != 0)
+                return false;
+
+            int currentRow = from.Row + rowStep;
+            int currentCol = from.Column + colStep;
+
+            // Verificar todas las casillas intermedias
+            while (currentRow != to.Row || currentCol != to.Column)
+            {
+                Position currentPos = new Position(currentRow, currentCol);
+                if (board.GetPieceAt(currentPos) != null)
+                {
+                    return false; // Camino bloqueado
+                }
+
+                currentRow += rowStep;
+                currentCol += colStep;
+            }
+
+            return true;
         }
     }
 }

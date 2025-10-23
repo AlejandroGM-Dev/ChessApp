@@ -128,5 +128,48 @@ namespace ChessApp.Core.Game
             board.PlacePieceAt(movingPiece, from);
             board.PlacePieceAt(capturedPiece, to);
         }
+
+        // Verificar si hay tablas por ahogado (stalemate)
+        public static bool IsStalemate(Board board, PieceColor playerColor)
+        {
+            // Si el rey no está en jaque pero no tiene movimientos legales
+            if (IsKingInCheck(board, playerColor))
+                return false;
+
+            // Verificar si el jugador tiene algún movimiento legal
+            for (int fromRow = 1; fromRow <= 8; fromRow++)
+            {
+                for (int fromCol = 1; fromCol <= 8; fromCol++)
+                {
+                    Position from = new Position(fromRow, fromCol);
+                    Piece? piece = board.GetPieceAt(from);
+
+                    if (piece != null && piece.Color == playerColor)
+                    {
+                        for (int toRow = 1; toRow <= 8; toRow++)
+                        {
+                            for (int toCol = 1; toCol <= 8; toCol++)
+                            {
+                                Position to = new Position(toRow, toCol);
+                                if (piece.IsValidMove(from, to, board))
+                                {
+                                    // Simular el movimiento para verificar que no deja al rey en jaque
+                                    Piece? capturedPiece = SimulateMove(board, from, to);
+                                    bool stillInCheck = IsKingInCheck(board, playerColor);
+                                    RevertMove(board, from, to, capturedPiece);
+
+                                    if (!stillInCheck)
+                                    {
+                                        return false; // Hay al menos un movimiento legal
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return true; // No hay movimientos legales - ¡Tablas!
+        }
     }
 }

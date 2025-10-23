@@ -1,6 +1,7 @@
 ﻿using ChessApp.Core.Enums;
 using ChessApp.Core.Models;
 using ChessApp.Core.Pieces;
+using ChessApp.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +33,28 @@ namespace ChessApp.Core.Game
             LastPawnDoubleMove = null;
         }
 
+        public string GetPgnResult()
+        {
+            return Status switch
+            {
+                GameStatus.WhiteCheckMate => "1-0",
+                GameStatus.BlackCheckMate => "0-1",
+                GameStatus.Stalmate or GameStatus.Draw => "1/2-1/2",
+                _ => "*"
+            };
+        }
+
+        public PgnMetadata GetPgnMetadata()
+        {
+            return new PgnMetadata
+            {
+                WhitePlayer = WhitePlayer,
+                BlackPlayer = BlackPlayer,
+                Date = StartTime.ToString("yyyy.MM.dd"),
+                Result = GetPgnResult()
+            };
+        }
+
         // Metodo para hacer test
         public void SetLastPawnDoubleMoveForTesting(Position position)
         {
@@ -42,7 +65,7 @@ namespace ChessApp.Core.Game
         public MoveResult AttemptMove(Position from, Position to, PieceType? promotionPiece = null)
         {
             // Verificar que el juego esta en progreso
-            if (Status != GameStatus.InProgress)
+            if (Status != GameStatus.InProgress && Status != GameStatus.WhiteCheck && Status != GameStatus.BlackCheck)
             {
                 return MoveResult.Failure("El juego ha terminado");
             }
@@ -66,45 +89,119 @@ namespace ChessApp.Core.Game
                 return MoveResult.Failure("No es tu turno");
             }
 
-            // Verificar captura al paso (antes de la validación normal)
+            // Verificar promocion ANTES del movimiento
+            bool isPromotion = piece.Type == PieceType.Pawn &&
+                              ((piece.Color == PieceColor.White && to.Row == 8) ||
+                               (piece.Color == PieceColor.Black && to.Row == 1));
+
+            if (isPromotion && !promotionPiece.HasValue)
+            {
+                return MoveResult.Failure("Debe especificar una pieza para la promoción del peón");
+            }
+
+            if (promotionPiece.HasValue && !IsValidPromotionPiece(promotionPiece.Value))
+            {
+                return MoveResult.Failure("Pieza de promoción no válida");
+            }
+
+            // Verificar captura al paso
             bool isEnPassant = piece.Type == PieceType.Pawn &&
                               ((Pawn)piece).IsValidEnPassantCapture(from, to, Board, LastPawnDoubleMove);
 
-            // Si es captura al paso, saltar validaciones normales
-            if (!isEnPassant)
+            Piece? capturedPiece = null;
+
+            if (isEnPassant)
             {
-                // Verificar si el movimiento es valido para la pieza
+                // Para captura al paso, la pieza capturada está en una posición diferente
+                int capturedPawnRow = from.Row;
+                int capturedPawnCol = to.Column;
+                Position capturedPawnPosition = new Position(capturedPawnRow, capturedPawnCol);
+                capturedPiece = Board.GetPieceAt(capturedPawnPosition);
+            }
+            else
+            {
+                // Captura normal
+                capturedPiece = Board.GetPieceAt(to);
+
+                // Verificar si el movimiento es valido para la pieza (excepto para captura al paso)
                 if (!piece.IsValidMove(from, to, Board))
                 {
                     return MoveResult.Failure("Movimiento no valido para esta pieza");
                 }
 
                 // Verificar que no se capture una pieza del mismo color
-                Piece? targetPiece = Board.GetPieceAt(to);
-                if (targetPiece != null && targetPiece.Color == CurrentPlayer)
+                if (capturedPiece != null && capturedPiece.Color == CurrentPlayer)
                 {
                     return MoveResult.Failure("No puedes capturar tus propias piezas");
                 }
             }
 
-            // Verificar la promoción de un peon
-            bool isPromotion = piece.Type == PieceType.Pawn && ((Pawn)piece).IsPromotionMove(to);
-            if (isPromotion && !promotionPiece.HasValue)
+            // VERIFICACIÓN CRÍTICA: El movimiento no debe dejar al rey en jaque
+            if (!IsMoveSafeForKing(from, to, piece, isEnPassant, promotionPiece))
             {
-                return MoveResult.Failure("Debe especificar una pieza para la promoción del peón");
-            }
-
-            // Si la promocion es especificada, verificar que sea valida
-            if (promotionPiece.HasValue && !IsValidPromotionPiece(promotionPiece.Value))
-            {
-                return MoveResult.Failure("Pieza de promoción no válida");
+                return MoveResult.Failure("No puedes dejar a tu rey en jaque");
             }
 
             // Si todas las validaciones pasan, ejecutar el movimiento
-            return ExecuteMove(from, to, piece, Board.GetPieceAt(to), promotionPiece, isEnPassant);
+            return ExecuteMove(from, to, piece, capturedPiece, promotionPiece, isEnPassant);
         }
 
-        private MoveResult ExecuteMove(Position from, Position to, Piece piece, Piece? capturedPiece, PieceType? promotionPiece = null, bool isEnPassant = false)
+        // Metodo para verificar si un movimiento deja al rey en jaque
+        private bool IsMoveSafeForKing(Position from, Position to, Piece piece, bool isEnPassant, PieceType? promotionPiece)
+        {
+            // Guardar el estado actual del tablero
+            Piece? originalPieceAtTo = Board.GetPieceAt(to);
+            Piece? originalPieceAtFrom = Board.GetPieceAt(from);
+
+            // Simular el movimiento
+            if (isEnPassant)
+            {
+                // Simular captura al paso
+                Position capturedPawnPosition = new Position(from.Row, to.Column);
+                Piece? capturedPawn = Board.GetPieceAt(capturedPawnPosition);
+
+                Board.PlacePieceAt(piece, to);
+                Board.PlacePieceAt(null, from);
+                Board.PlacePieceAt(null, capturedPawnPosition);
+
+                // Verificar si el rey queda en jaque
+                bool kingInCheck = CheckValidator.IsKingInCheck(Board, CurrentPlayer);
+
+                // Revertir la simulacion
+                Board.PlacePieceAt(originalPieceAtFrom, from);
+                Board.PlacePieceAt(originalPieceAtTo, to);
+                Board.PlacePieceAt(capturedPawn, capturedPawnPosition);
+
+                return !kingInCheck;
+            }
+            else
+            {
+                // Simular movimiento normal
+                Board.PlacePieceAt(piece, to);
+                Board.PlacePieceAt(null, from);
+
+                // Si es promocion, simular la pieza promocionada
+                if (promotionPiece.HasValue && piece.Type == PieceType.Pawn &&
+                    ((piece.Color == PieceColor.White && to.Row == 8) ||
+                     (piece.Color == PieceColor.Black && to.Row == 1)))
+                {
+                    Piece promotedPiece = CreatePromotedPiece(promotionPiece.Value, CurrentPlayer);
+                    Board.PlacePieceAt(promotedPiece, to);
+                }
+
+                // Verificar si el rey queda en jaque
+                bool kingInCheck = CheckValidator.IsKingInCheck(Board, CurrentPlayer);
+
+                // Revertir la simulacion
+                Board.PlacePieceAt(originalPieceAtFrom, from);
+                Board.PlacePieceAt(originalPieceAtTo, to);
+
+                return !kingInCheck;
+            }
+        }
+
+        private MoveResult ExecuteMove(Position from, Position to, Piece piece, Piece? capturedPiece,
+                                     PieceType? promotionPiece = null, bool isEnPassant = false)
         {
             // Verificar si es un enroque
             bool isCastling = piece.Type == PieceType.King && Math.Abs(to.Column - from.Column) == 2;
@@ -120,13 +217,19 @@ namespace ChessApp.Core.Game
                 promotionPiece = PieceType.Queen;
             }
 
+            // Crear el objeto Move ANTES de modificar el tablero
+            Move move = new Move(from, to, piece, capturedPiece);
+            move.IsCastling = isCastling;
+            move.IsPromotion = isPromotion;
+            move.PromotedPieceType = promotionPiece;
+            move.IsEnPassant = isEnPassant;
+
             // Manejar captura al paso
-            Piece? actualCapturedPiece = capturedPiece;
             if (isEnPassant)
             {
                 // En captura al paso, el peón capturado está en la misma fila de origen pero columna de destino
                 Position capturedPawnPosition = new Position(from.Row, to.Column);
-                actualCapturedPiece = Board.GetPieceAt(capturedPawnPosition);
+                Piece? actualCapturedPiece = Board.GetPieceAt(capturedPawnPosition);
 
                 // Remover el peón capturado del tablero
                 if (actualCapturedPiece != null)
@@ -134,13 +237,6 @@ namespace ChessApp.Core.Game
                     Board.PlacePieceAt(null, capturedPawnPosition);
                 }
             }
-
-            // Crear el objeto Move
-            Move move = new Move(from, to, piece, actualCapturedPiece);
-            move.IsCastling = isCastling;
-            move.IsPromotion = isPromotion;
-            move.PromotedPieceType = promotionPiece;
-            move.IsEnPassant = isEnPassant;
 
             // Actualizar el tablero
             Board.PlacePieceAt(piece, to);
@@ -158,20 +254,8 @@ namespace ChessApp.Core.Game
                 ExecutePromotion(to, promotionPiece.Value);
             }
 
-            // CORRECCIÓN: Actualizar LastPawnDoubleMove ANTES de marcar HasMoved
-            if (piece.Type == PieceType.Pawn && ((Pawn)piece).IsDoubleMove(from, to))
-            {
-                LastPawnDoubleMove = to; // Guardar la posición final del peón que movió dos casillas
-            }
-            else
-            {
-                // CORRECCIÓN: Solo resetear si no es un movimiento doble de peón
-                // No resetear si otro peón está moviendo (podría estar haciendo captura al paso)
-                if (piece.Type != PieceType.Pawn)
-                {
-                    LastPawnDoubleMove = null;
-                }
-            }
+            // Actualizar LastPawnDoubleMove
+            UpdateLastPawnDoubleMove(piece, from, to);
 
             // Marcar que la pieza se ha movido (DESPUÉS de verificar IsDoubleMove)
             piece.HasMoved = true;
@@ -198,6 +282,26 @@ namespace ChessApp.Core.Game
             return MoveResult.Success("Movimiento exitoso", move);
         }
 
+        private void UpdateLastPawnDoubleMove(Piece piece, Position from, Position to)
+        {
+            if (piece.Type == PieceType.Pawn)
+            {
+                Pawn pawn = (Pawn)piece;
+                if (pawn.IsDoubleMove(from, to))
+                {
+                    LastPawnDoubleMove = to;
+                }
+                else
+                {
+                    LastPawnDoubleMove = null;
+                }
+            }
+            else
+            {
+                LastPawnDoubleMove = null;
+            }
+        }
+
         private void ExecuteCastling(Position kingFrom, Position kingTo)
         {
             bool isKingside = kingTo.Column > kingFrom.Column;
@@ -208,11 +312,14 @@ namespace ChessApp.Core.Game
             Position rookTo = new Position(kingFrom.Row, rookToColumn);
 
             Piece? rook = Board.GetPieceAt(rookFrom);
-            Board.PlacePieceAt(rook, rookTo);
-            Board.PlacePieceAt(null, rookFrom);
+            if (rook != null)
+            {
+                Board.PlacePieceAt(rook, rookTo);
+                Board.PlacePieceAt(null, rookFrom);
 
-            // Marcar que la torre se ha movido
-            rook.HasMoved = true;
+                // Marcar que la torre se ha movido
+                rook.HasMoved = true;
+            }
         }
 
         private void ExecutePromotion(Position position, PieceType promotionPiece)
@@ -270,31 +377,30 @@ namespace ChessApp.Core.Game
 
         private void UpdateGameStatus()
         {
-            // Verificar jaque
+            // Verificar jaque mate primero
+            if (CheckValidator.IsCheckmate(Board, PieceColor.White))
+            {
+                Status = GameStatus.WhiteCheckMate;
+                return;
+            }
+
+            if (CheckValidator.IsCheckmate(Board, PieceColor.Black))
+            {
+                Status = GameStatus.BlackCheckMate;
+                return;
+            }
+
+            // Verificar jaque simple
             bool whiteInCheck = CheckValidator.IsKingInCheck(Board, PieceColor.White);
             bool blackInCheck = CheckValidator.IsKingInCheck(Board, PieceColor.Black);
 
             if (whiteInCheck)
             {
-                if (CheckValidator.IsCheckmate(Board, PieceColor.White))
-                {
-                    Status = GameStatus.WhiteCheckMate;
-                }
-                else
-                {
-                    Status = GameStatus.WhiteCheck;
-                }
+                Status = GameStatus.WhiteCheck;
             }
             else if (blackInCheck)
             {
-                if (CheckValidator.IsCheckmate(Board, PieceColor.Black))
-                {
-                    Status = GameStatus.BlackCheckMate;
-                }
-                else
-                {
-                    Status = GameStatus.BlackCheck;
-                }
+                Status = GameStatus.BlackCheck;
             }
             else
             {
