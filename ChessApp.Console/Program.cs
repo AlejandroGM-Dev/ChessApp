@@ -10,111 +10,359 @@ namespace ChessApp.Console
         static void Main(string[] args)
         {
             System.Console.WriteLine("=== SISTEMA DE AJEDREZ COMPLETO ===");
-            System.Console.WriteLine("Probando movimientos y promoción de peones...\n");
+            System.Console.WriteLine("Probando captura al paso...\n");
 
-            TestPawnPromotion();
+            TestEnPassant();
         }
 
-        static void TestPawnPromotion()
+        static void TestEnPassant()
         {
-            System.Console.WriteLine("=== PRUEBA DE PROMOCIÓN DE PEONES ===");
+            System.Console.WriteLine("=== PRUEBA DE CAPTURA AL PASO ===");
 
-            // Probar promoción específica con debugging detallado
-            ProbarPromocionConDebugging();
+            TestEnPassantBlanco();
+            TestEnPassantNegro();
+            TestEnPassantIntegracionReal();
         }
 
-        static void ProbarPromocionConDebugging()
+        static void TestEnPassantBlanco()
         {
-            System.Console.WriteLine("\n--- DEBUG DETALLADO DE PROMOCIÓN ---");
+            System.Console.WriteLine("\n--- Captura al paso por blancas ---");
+
+            var juego = new ChessGame();
+            ConfigurarEnPassantBlanco(juego);
+
+            MostrarEstadoTablero(juego);
+            System.Console.WriteLine($"Último movimiento de peón doble: {juego.LastPawnDoubleMove}");
+            System.Console.WriteLine($"Jugador actual: {juego.CurrentPlayer}");
+
+            // Intentar captura al paso - blanco captura negro en d5
+            System.Console.WriteLine("--- Intentando captura al paso e5xd6 ---");
+            Position desde = new Position(5, 5); // e5
+            Position hasta = new Position(6, 4); // d6
+
+            var resultado = juego.AttemptMove(desde, hasta);
+
+            VerificarResultadoEnPassant(juego, resultado, new Position(5, 4)); // d5
+        }
+
+        static void TestEnPassantNegro()
+        {
+            System.Console.WriteLine("\n--- Captura al paso por negras ---");
+
+            var juego = new ChessGame();
+            ConfigurarEnPassantNegro(juego);
+
+            MostrarEstadoTablero(juego);
+            System.Console.WriteLine($"Último movimiento de peón doble: {juego.LastPawnDoubleMove}");
+            System.Console.WriteLine($"Jugador actual: {juego.CurrentPlayer}");
+
+            // Intentar captura al paso - negro captura blanco en e4
+            System.Console.WriteLine("--- Intentando captura al paso d4xe3 ---");
+            Position desde = new Position(4, 4); // d4
+            Position hasta = new Position(3, 5); // e3
+
+            var resultado = juego.AttemptMove(desde, hasta);
+
+            VerificarResultadoEnPassant(juego, resultado, new Position(4, 5)); // e4
+        }
+
+        static void TestEnPassantIntegracionReal()
+        {
+            System.Console.WriteLine("\n=== PRUEBA DE INTEGRACIÓN REAL ===");
 
             var juego = new ChessGame();
 
-            // Configurar tablero para promoción
-            ConfigurarTableroParaPromocion(juego);
+            // Crear una posición específica donde se pueda probar captura al paso
+            // sin depender de movimientos previos complejos
+            ConfigurarIntegracionEnPassant(juego);
 
-            // Mostrar estado inicial
-            System.Console.WriteLine("Estado inicial:");
-            System.Console.WriteLine($"  Jugador actual: {juego.CurrentPlayer}");
-            System.Console.WriteLine($"  Estado del juego: {juego.Status}");
+            MostrarEstadoTablero(juego);
+            System.Console.WriteLine($"Último movimiento de peón doble: {juego.LastPawnDoubleMove}");
+            System.Console.WriteLine($"Jugador actual: {juego.CurrentPlayer}");
 
-            // DEBUG: Verificar que el peón está en e7
-            Piece? piezaAntes = juego.Board.GetPieceAt(new Position(7, 5));
-            System.Console.WriteLine($"  Pieza en e7 antes: {piezaAntes?.Type} ({piezaAntes?.Color})");
+            // Intentar captura al paso
+            System.Console.WriteLine("--- Intentando captura al paso e5xd6 ---");
+            var resultado = juego.AttemptMove(new Position("e5"), new Position("d6"));
 
-            // Mover peón a posición de promoción
-            Position desde = new Position(7, 5); // e7
-            Position hasta = new Position(8, 5); // e8
-
-            System.Console.WriteLine($"\nIntentando mover {desde} -> {hasta} con promoción a Queen");
-
-            // **CORRECCIÓN: Pasar explícitamente PieceType.Queen**
-            var resultado = juego.AttemptMove(desde, hasta, PieceType.Queen);
-
-            System.Console.WriteLine($"\nResultado del movimiento:");
-            System.Console.WriteLine($"  Éxito: {resultado.IsSuccess}");
-            System.Console.WriteLine($"  Mensaje: {resultado.Message}");
-
-            if (resultado.Move != null)
-            {
-                System.Console.WriteLine($"\nInformación del Move:");
-                System.Console.WriteLine($"  From: {resultado.Move.From}");
-                System.Console.WriteLine($"  To: {resultado.Move.To}");
-                System.Console.WriteLine($"  Piece: {resultado.Move.Piece.Type} ({resultado.Move.Piece.Color})");
-                System.Console.WriteLine($"  IsPromotion: {resultado.Move.IsPromotion}");
-                System.Console.WriteLine($"  PromotedPieceType: {resultado.Move.PromotedPieceType}");
-                System.Console.WriteLine($"  AlgebraicNotation: {resultado.Move.AlgebraicNotation}");
-                System.Console.WriteLine($"  ToAlgebraicNotation(): {resultado.Move.ToAlgebraicNotation()}");
-            }
-            else
-            {
-                System.Console.WriteLine("  Move es NULL!");
-            }
-
-            // Verificar estado después del movimiento
-            System.Console.WriteLine($"\nEstado después del movimiento:");
-            System.Console.WriteLine($"  Jugador actual: {juego.CurrentPlayer}");
-            System.Console.WriteLine($"  Estado del juego: {juego.Status}");
-
-            // **VERIFICACIÓN CRÍTICA: Qué pieza hay realmente en e8**
-            Piece? piezaDespues = juego.Board.GetPieceAt(hasta);
-            System.Console.WriteLine($"  Pieza en {hasta} después: {piezaDespues?.Type} ({piezaDespues?.Color})");
-
-            // Verificar también qué hay en e7
-            Piece? piezaEnOrigen = juego.Board.GetPieceAt(desde);
-            System.Console.WriteLine($"  Pieza en {desde} después: {piezaEnOrigen?.Type} ({piezaEnOrigen?.Color})");
-
-            // Verificar historial
-            System.Console.WriteLine($"\nHistorial de movimientos:");
-            var historial = juego.GetFormattedMoveHistory();
-            foreach (var movimiento in historial)
-            {
-                System.Console.WriteLine($"  {movimiento}");
-            }
+            VerificarResultadoEnPassant(juego, resultado, new Position(5, 4)); // d5
         }
 
-        static void ConfigurarTableroParaPromocion(ChessGame juego)
+        static void ConfigurarEnPassantBlanco(ChessGame juego)
         {
-            // Limpiar el tablero completamente
+            // Limpiar tablero
             for (int fila = 1; fila <= 8; fila++)
             {
-                for (int columna = 1; columna <= 8; columna++)
+                for (int col = 1; col <= 8; col++)
                 {
-                    juego.Board.PlacePieceAt(null, new Position(fila, columna));
+                    juego.Board.PlacePieceAt(null, new Position(fila, col));
                 }
             }
 
-            // Colocar solo las piezas necesarias para la prueba
-            // Peón blanco en e7 listo para promover
-            juego.Board.PlacePieceAt(new Pawn(PieceColor.White), new Position(7, 5));
+            // Posición: Peón blanco en e5, peón negro en d5 (que acaba de mover dos casillas)
+            juego.Board.PlacePieceAt(new Pawn(PieceColor.White), new Position(5, 5)); // e5
+            juego.Board.PlacePieceAt(new Pawn(PieceColor.Black), new Position(5, 4)); // d5
 
-            // Rey blanco en esquina (para evitar jaque)
+            // Simular que el peón negro acaba de mover dos casillas a d5
+            juego.SetLastPawnDoubleMoveForTesting(new Position(5, 4));
+
+            // Reyes
             juego.Board.PlacePieceAt(new King(PieceColor.White), new Position(1, 1));
+            juego.Board.PlacePieceAt(new King(PieceColor.Black), new Position(8, 8));
 
-            // Rey negro en posición segura
-            juego.Board.PlacePieceAt(new King(PieceColor.Black), new Position(8, 1));
+            // Turno blanco (por defecto)
+        }
+
+        static void ConfigurarEnPassantNegro(ChessGame juego)
+        {
+            // Limpiar tablero
+            for (int fila = 1; fila <= 8; fila++)
+            {
+                for (int col = 1; col <= 8; col++)
+                {
+                    juego.Board.PlacePieceAt(null, new Position(fila, col));
+                }
+            }
+
+            // Posición: Peón blanco en e4 (que acaba de mover dos casillas), peón negro en d4
+            juego.Board.PlacePieceAt(new Pawn(PieceColor.White), new Position(4, 5)); // e4
+            juego.Board.PlacePieceAt(new Pawn(PieceColor.Black), new Position(4, 4)); // d4
+
+            // Simular que el peón blanco acaba de mover dos casillas a e4
+            juego.SetLastPawnDoubleMoveForTesting(new Position(4, 5));
+
+            // Reyes
+            juego.Board.PlacePieceAt(new King(PieceColor.White), new Position(1, 1));
+            juego.Board.PlacePieceAt(new King(PieceColor.Black), new Position(8, 8));
+
+            // Cambiar a turno negro
+            juego.CurrentPlayer = PieceColor.Black;
+        }
+
+        static void ConfigurarIntegracionEnPassant(ChessGame juego)
+        {
+            // Limpiar tablero
+            for (int fila = 1; fila <= 8; fila++)
+            {
+                for (int col = 1; col <= 8; col++)
+                {
+                    juego.Board.PlacePieceAt(null, new Position(fila, col));
+                }
+            }
+
+            // Configurar posición más realista pero controlada
+            // Peones en posición para captura al paso
+            juego.Board.PlacePieceAt(new Pawn(PieceColor.White), new Position(5, 5)); // e5
+            juego.Board.PlacePieceAt(new Pawn(PieceColor.Black), new Position(5, 4)); // d5
+            juego.Board.PlacePieceAt(new Pawn(PieceColor.White), new Position(2, 2)); // b2
+            juego.Board.PlacePieceAt(new Pawn(PieceColor.Black), new Position(7, 7)); // g7
+
+            // Reyes
+            juego.Board.PlacePieceAt(new King(PieceColor.White), new Position(1, 4)); // d1
+            juego.Board.PlacePieceAt(new King(PieceColor.Black), new Position(8, 4)); // d8
+
+            // Simular que el peón negro acaba de mover dos casillas a d5
+            juego.SetLastPawnDoubleMoveForTesting(new Position(5, 4));
+        }
+
+        static void VerificarResultadoEnPassant(ChessGame juego, MoveResult resultado, Position posicionPeonCapturado)
+        {
+            if (resultado.IsSuccess && resultado.Move?.IsEnPassant == true)
+            {
+                System.Console.WriteLine($"✅ ¡Captura al paso exitosa! {resultado.Move.ToAlgebraicNotation()}");
+                System.Console.WriteLine($"   Peón capturado en {posicionPeonCapturado}");
+
+                // Verificar que el peón capturado fue removido
+                Piece? piezaEnPosicionCapturada = juego.Board.GetPieceAt(posicionPeonCapturado);
+                if (piezaEnPosicionCapturada == null)
+                {
+                    System.Console.WriteLine("   ✅ Peón enemigo fue capturado correctamente");
+                }
+                else
+                {
+                    System.Console.WriteLine($"   ❌ Peón enemigo todavía en {posicionPeonCapturado}: {piezaEnPosicionCapturada.Type}");
+                }
+
+                // Verificar que el peón capturador se movió a la posición correcta
+                Piece? piezaEnDestino = juego.Board.GetPieceAt(resultado.Move.To);
+                if (piezaEnDestino?.Type == PieceType.Pawn && piezaEnDestino?.Color == resultado.Move.Piece.Color)
+                {
+                    System.Console.WriteLine($"   ✅ Peón capturador se movió a {resultado.Move.To}");
+                }
+                else
+                {
+                    System.Console.WriteLine($"   ❌ Problema con peón capturador en {resultado.Move.To}");
+                }
+            }
+            else
+            {
+                System.Console.WriteLine($"❌ Captura al paso falló: {resultado.Message}");
+                System.Console.WriteLine($"   IsEnPassant: {resultado.Move?.IsEnPassant}");
+
+                // Debug adicional
+                if (resultado.Move != null)
+                {
+                    System.Console.WriteLine($"   Move: {resultado.Move.From} -> {resultado.Move.To}");
+                    System.Console.WriteLine($"   Piece: {resultado.Move.Piece.Type} ({resultado.Move.Piece.Color})");
+                }
+            }
+
+            MostrarEstadoTablero(juego);
+        }
+
+        static void MostrarEstadoTablero(ChessGame juego)
+        {
+            System.Console.WriteLine("\n--- Estado del tablero ---");
+            for (int fila = 8; fila >= 1; fila--)
+            {
+                System.Console.Write($"{fila} ");
+                for (int col = 1; col <= 8; col++)
+                {
+                    var pieza = juego.Board.GetPieceAt(new Position(fila, col));
+                    if (pieza == null)
+                    {
+                        System.Console.Write(". ");
+                    }
+                    else
+                    {
+                        char simbolo = pieza.Type switch
+                        {
+                            PieceType.Pawn => 'P',
+                            PieceType.Rook => 'R',
+                            PieceType.Knight => 'N',
+                            PieceType.Bishop => 'B',
+                            PieceType.Queen => 'Q',
+                            PieceType.King => 'K',
+                            _ => '?'
+                        };
+                        System.Console.Write(pieza.Color == PieceColor.White ?
+                                           char.ToUpper(simbolo) : char.ToLower(simbolo));
+                        System.Console.Write(" ");
+                    }
+                }
+                System.Console.WriteLine();
+            }
+            System.Console.WriteLine("  a b c d e f g h");
         }
     }
 }
+// ---------------------------------------------------------------------
+//using ChessApp.Core.Enums;
+//using ChessApp.Core.Game;
+//using ChessApp.Core.Models;
+//using ChessApp.Core.Pieces;
+
+//namespace ChessApp.Console
+//{
+//    class Program
+//    {
+//        static void Main(string[] args)
+//        {
+//            System.Console.WriteLine("=== SISTEMA DE AJEDREZ COMPLETO ===");
+//            System.Console.WriteLine("Probando movimientos y promoción de peones...\n");
+
+//            TestPawnPromotion();
+//        }
+
+//        static void TestPawnPromotion()
+//        {
+//            System.Console.WriteLine("=== PRUEBA DE PROMOCIÓN DE PEONES ===");
+
+//            // Probar promoción específica con debugging detallado
+//            ProbarPromocionConDebugging();
+//        }
+
+//        static void ProbarPromocionConDebugging()
+//        {
+//            System.Console.WriteLine("\n--- DEBUG DETALLADO DE PROMOCIÓN ---");
+
+//            var juego = new ChessGame();
+
+//            // Configurar tablero para promoción
+//            ConfigurarTableroParaPromocion(juego);
+
+//            // Mostrar estado inicial
+//            System.Console.WriteLine("Estado inicial:");
+//            System.Console.WriteLine($"  Jugador actual: {juego.CurrentPlayer}");
+//            System.Console.WriteLine($"  Estado del juego: {juego.Status}");
+
+//            // DEBUG: Verificar que el peón está en e7
+//            Piece? piezaAntes = juego.Board.GetPieceAt(new Position(7, 5));
+//            System.Console.WriteLine($"  Pieza en e7 antes: {piezaAntes?.Type} ({piezaAntes?.Color})");
+
+//            // Mover peón a posición de promoción
+//            Position desde = new Position(7, 5); // e7
+//            Position hasta = new Position(8, 5); // e8
+
+//            System.Console.WriteLine($"\nIntentando mover {desde} -> {hasta} con promoción a Queen");
+
+//            // **CORRECCIÓN: Pasar explícitamente PieceType.Queen**
+//            var resultado = juego.AttemptMove(desde, hasta, PieceType.Queen);
+
+//            System.Console.WriteLine($"\nResultado del movimiento:");
+//            System.Console.WriteLine($"  Éxito: {resultado.IsSuccess}");
+//            System.Console.WriteLine($"  Mensaje: {resultado.Message}");
+
+//            if (resultado.Move != null)
+//            {
+//                System.Console.WriteLine($"\nInformación del Move:");
+//                System.Console.WriteLine($"  From: {resultado.Move.From}");
+//                System.Console.WriteLine($"  To: {resultado.Move.To}");
+//                System.Console.WriteLine($"  Piece: {resultado.Move.Piece.Type} ({resultado.Move.Piece.Color})");
+//                System.Console.WriteLine($"  IsPromotion: {resultado.Move.IsPromotion}");
+//                System.Console.WriteLine($"  PromotedPieceType: {resultado.Move.PromotedPieceType}");
+//                System.Console.WriteLine($"  AlgebraicNotation: {resultado.Move.AlgebraicNotation}");
+//                System.Console.WriteLine($"  ToAlgebraicNotation(): {resultado.Move.ToAlgebraicNotation()}");
+//            }
+//            else
+//            {
+//                System.Console.WriteLine("  Move es NULL!");
+//            }
+
+//            // Verificar estado después del movimiento
+//            System.Console.WriteLine($"\nEstado después del movimiento:");
+//            System.Console.WriteLine($"  Jugador actual: {juego.CurrentPlayer}");
+//            System.Console.WriteLine($"  Estado del juego: {juego.Status}");
+
+//            // **VERIFICACIÓN CRÍTICA: Qué pieza hay realmente en e8**
+//            Piece? piezaDespues = juego.Board.GetPieceAt(hasta);
+//            System.Console.WriteLine($"  Pieza en {hasta} después: {piezaDespues?.Type} ({piezaDespues?.Color})");
+
+//            // Verificar también qué hay en e7
+//            Piece? piezaEnOrigen = juego.Board.GetPieceAt(desde);
+//            System.Console.WriteLine($"  Pieza en {desde} después: {piezaEnOrigen?.Type} ({piezaEnOrigen?.Color})");
+
+//            // Verificar historial
+//            System.Console.WriteLine($"\nHistorial de movimientos:");
+//            var historial = juego.GetFormattedMoveHistory();
+//            foreach (var movimiento in historial)
+//            {
+//                System.Console.WriteLine($"  {movimiento}");
+//            }
+//        }
+
+//        static void ConfigurarTableroParaPromocion(ChessGame juego)
+//        {
+//            // Limpiar el tablero completamente
+//            for (int fila = 1; fila <= 8; fila++)
+//            {
+//                for (int columna = 1; columna <= 8; columna++)
+//                {
+//                    juego.Board.PlacePieceAt(null, new Position(fila, columna));
+//                }
+//            }
+
+//            // Colocar solo las piezas necesarias para la prueba
+//            // Peón blanco en e7 listo para promover
+//            juego.Board.PlacePieceAt(new Pawn(PieceColor.White), new Position(7, 5));
+
+//            // Rey blanco en esquina (para evitar jaque)
+//            juego.Board.PlacePieceAt(new King(PieceColor.White), new Position(1, 1));
+
+//            // Rey negro en posición segura
+//            juego.Board.PlacePieceAt(new King(PieceColor.Black), new Position(8, 1));
+//        }
+//    }
+//}
 //--------------------------------------------------------------------------------
 
 //using ChessApp.Core.Game;

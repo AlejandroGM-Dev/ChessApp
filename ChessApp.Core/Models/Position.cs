@@ -62,4 +62,25 @@ public class Position
     {
         return AlgebraicNotation;
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is Position other)
+        {
+            return Row == other.Row && Column == other.Column;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Row, Column);
+    }
+
+    // Método para comparar con otra posición (opcional, pero útil)
+    public bool Equals(Position? other)
+    {
+        if (other is null) return false;
+        return Row == other.Row && Column == other.Column;
+    }
 }

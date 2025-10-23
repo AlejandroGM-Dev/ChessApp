@@ -15,13 +15,14 @@ namespace ChessApp.Core.Models
         public Piece Piece { get; set; }
         public Piece? CapturedPiece { get; set; }
         public DateTime Timestamp { get; set; }
-        public string AlgebraicNotation { get; set; }
+        public string AlgebraicNotation => ToAlgebraicNotation();
         public bool IsCheck { get; set; }
         public bool IsCheckmate { get; set; }
         public bool IsCapture { get; set; }
         public bool IsCastling { get; set; }
         public bool IsPromotion { get; set; }
         public PieceType? PromotedPieceType{ get; set; }
+        public bool IsEnPassant { get; set; }
 
         public Move(Position from, Position to, Piece piece, Piece? capturedPiece = null)
         {
@@ -31,7 +32,6 @@ namespace ChessApp.Core.Models
             CapturedPiece = capturedPiece;
             Timestamp = DateTime.Now;
             IsCapture = capturedPiece != null;
-            AlgebraicNotation = ToAlgebraicNotation();
         }
 
         public string ToAlgebraicNotation()
@@ -42,13 +42,27 @@ namespace ChessApp.Core.Models
                 return To.Column > From.Column ? "O-O" : "O-O-O"; // O-O (corto) / O-O-O (largo)
             }
 
-
             string notation;
 
             if (Piece.Type == PieceType.Pawn)
             {
-                notation = IsCapture ? $"{From.GetColumnLetter()}x{To}" : To.ToString();
+                // Captura al paso - notación especial
+                if (IsEnPassant)
+                {
+                    notation = $"{From.GetColumnLetter()}x{To} e.p.";
+                }
+                // Captura normal de peón
+                else if (IsCapture)
+                {
+                    notation = $"{From.GetColumnLetter()}x{To}";
+                }
+                // Movimiento simple
+                else
+                {
+                    notation = To.ToString();
+                }
 
+                // Agregar notación de promoción
                 if (IsPromotion && PromotedPieceType.HasValue)
                 {
                     string promotionSymbol = GetPieceSymbol(PromotedPieceType.Value);

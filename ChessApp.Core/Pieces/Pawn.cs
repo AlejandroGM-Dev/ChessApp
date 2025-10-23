@@ -1,21 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ChessApp.Core.Enums;
 using ChessApp.Core.Models;
-using ChessApp.Core.Enums;
 
 namespace ChessApp.Core.Pieces
 {
     public class Pawn : Piece
     {
-        // Constructor que inicializa un Peon con el color especificado.
         public Pawn(PieceColor color) : base(color, PieceType.Pawn)
         {
         }
 
-        // Determina si el movimiento es valido segun las reglas del ajedrez.
         public override bool IsValidMove(Position from, Position to, Board board)
         {
             int direction = Color == PieceColor.White ? 1 : -1;
@@ -31,11 +24,10 @@ namespace ChessApp.Core.Pieces
             if (!HasMoved && from.Row == startRow && to.Column == from.Column && to.Row == from.Row + (2 * direction))
             {
                 Position intermediate = new Position(from.Row + direction, from.Column);
-
                 return board.GetPieceAt(intermediate) == null && board.GetPieceAt(to) == null;
             }
 
-            // Captura en diagnonal
+            // Captura en diagonal normal
             if (Math.Abs(to.Column - from.Column) == 1 && to.Row == from.Row + direction)
             {
                 Piece? target = board.GetPieceAt(to);
@@ -45,11 +37,55 @@ namespace ChessApp.Core.Pieces
             return false;
         }
 
-        // Metodo para comprobar si el movimiento resulta en promocion
+        // Método específico para captura al paso
+        public bool IsValidEnPassantCapture(Position from, Position to, Board board, Position? lastPawnDoubleMove)
+        {
+            if (lastPawnDoubleMove == null) return false;
+
+            int direction = Color == PieceColor.White ? 1 : -1;
+            int enPassantRow = Color == PieceColor.White ? 5 : 4;
+
+            // Verificar que el peón está en la fila correcta para captura al paso
+            if (from.Row != enPassantRow) return false;
+
+            // Verificar que el movimiento es diagonal
+            if (Math.Abs(to.Column - from.Column) != 1 || to.Row != from.Row + direction)
+                return false;
+
+            // Verificar que la casilla destino está vacía
+            if (board.GetPieceAt(to) != null) return false;
+
+            // CORRECCIÓN: El peón enemigo está en la MISMA fila que el peón capturador
+            // y en la columna de destino, no en una posición diferente
+            Position enemyPawnPosition = new Position(from.Row, to.Column);
+            Piece? enemyPawn = board.GetPieceAt(enemyPawnPosition);
+
+            if (enemyPawn == null || enemyPawn.Type != PieceType.Pawn || enemyPawn.Color == Color)
+                return false;
+
+            // CORRECCIÓN: Verificar que la posición del último movimiento coincide con el peón enemigo
+            return enemyPawnPosition.Equals(lastPawnDoubleMove);
+        }
+
         public bool IsPromotionMove(Position targetPosition)
         {
             return (Color == PieceColor.White && targetPosition.Row == 8) ||
                    (Color == PieceColor.Black && targetPosition.Row == 1);
+        }
+
+        // Método para verificar si un movimiento es un avance de dos casillas
+        public bool IsDoubleMove(Position from, Position to)
+        {
+            int direction = Color == PieceColor.White ? 1 : -1;
+            int startRow = Color == PieceColor.White ? 2 : 7;
+
+            // CORRECCIÓN: Verificar que el movimiento es exactamente de 2 filas
+            bool isDoubleMove = !HasMoved &&
+                               from.Row == startRow &&
+                               to.Column == from.Column &&
+                               to.Row == from.Row + (2 * direction);
+
+            return isDoubleMove;
         }
     }
 }
