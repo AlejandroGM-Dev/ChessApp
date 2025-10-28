@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChessApp.Core\ChessApp.Core.csproj" />
+    <ProjectReference Include="..\ChessApp.Analysis\ChessApp.Analysis.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

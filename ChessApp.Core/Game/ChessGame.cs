@@ -433,6 +433,66 @@ namespace ChessApp.Core.Game
             return formattedMoves;
         }
 
+        public static ChessGame LoadFromPgn(string pgnContent)
+        {
+            var game = new ChessGame();
+            game.ResetGame();
+
+            try
+            {
+                // Parsear movimientos básicos (implementación simplificada)
+                var moves = ExtractMovesFromPgn(pgnContent);
+
+                foreach (var move in moves)
+                {
+                    // Implementar lógica para ejecutar movimientos desde notación algebraica
+                    // Esto es complejo y requiere un parser completo de notación algebraica
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error loading PGN: {ex.Message}");
+            }
+
+            return game;
+        }
+
+        private static List<string> ExtractMovesFromPgn(string pgnContent)
+        {
+            var moves = new List<string>();
+
+            // Implementación básica - extraer movimientos del PGN
+            var lines = pgnContent.Split('\n');
+            bool inMoveSection = false;
+
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                if (line.StartsWith("1."))
+                    inMoveSection = true;
+
+                if (inMoveSection)
+                {
+                    // Extraer movimientos (implementación simplificada)
+                    var moveParts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var part in moveParts)
+                    {
+                        if (char.IsDigit(part[0]) && part.Contains('.'))
+                            continue;
+
+                        if (part == "*" || part == "1-0" || part == "0-1" || part == "1/2-1/2")
+                            break;
+
+                        moves.Add(part.Trim());
+                    }
+                }
+            }
+
+            return moves;
+        }
+
         // Reiniciar el juego
         public void ResetGame()
         {

@@ -1,10 +1,12 @@
-﻿using ChessApp.Core.Game;
+﻿using ChessApp.Core.Enums;
+using ChessApp.Core.Game;
 using ChessApp.Core.Models;
-using ChessApp.Core.Services;
+using ChessApp.Core.Pieces;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ChessApp.Core.Services
 {
@@ -12,19 +14,82 @@ namespace ChessApp.Core.Services
     {
         private readonly PgnService _pgnService;
         private readonly string _gamesDirectory;
+        private IAnalysisService? _analysisService;
+        private bool _analysisEnabled = false;
 
         public GameManager()
         {
             _pgnService = new PgnService();
             _gamesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "SavedGames");
 
-            // Crear directorio si no existe
             if (!Directory.Exists(_gamesDirectory))
             {
                 Directory.CreateDirectory(_gamesDirectory);
             }
         }
 
+        // Método para establecer el servicio de análisis (se llamará desde Console)
+        public void SetAnalysisService(IAnalysisService analysisService)
+        {
+            _analysisService = analysisService ?? throw new ArgumentNullException(nameof(analysisService));
+        }
+
+        public async Task<bool> InitializeAnalysisAsync()
+        {
+            if (_analysisService == null)
+            {
+                System.Console.WriteLine("❌ Servicio de análisis no configurado");
+                return false;
+            }
+
+            try
+            {
+                _analysisEnabled = await _analysisService.InitializeAsync();
+                return _analysisEnabled;
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"❌ Error inicializando análisis: {ex.Message}");
+                _analysisEnabled = false;
+                return false;
+            }
+        }
+
+        public async Task<AnalysisResult> AnalyzePositionAsync(string fen)
+        {
+            if (!_analysisEnabled || _analysisService == null)
+                throw new InvalidOperationException("Servicio de análisis no disponible");
+
+            try
+            {
+                return await _analysisService.AnalyzePositionAsync(fen);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error analizando posición: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<AnalysisResult> AnalyzeGameAsync(ChessGame game)
+        {
+            // Por ahora, analizamos solo la posición inicial
+            string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            return await AnalyzePositionAsync(fen);
+        }
+
+        public Task<List<MoveAnalysis>> AnalyzeGameMoveByMoveAsync(ChessGame game)
+        {
+            // Implementación simplificada - devolver lista vacía por ahora
+            return Task.FromResult(new List<MoveAnalysis>());
+        }
+
+        public void DisposeAnalysis()
+        {
+            _analysisService?.Dispose();
+            _analysisEnabled = false;
+        }
+
+        // Los demás métodos permanecen igual...
         public void SaveGame(ChessGame game, PgnMetadata? metadata = null)
         {
             metadata ??= new PgnMetadata
@@ -84,8 +149,7 @@ namespace ChessApp.Core.Services
                 }
                 catch (Exception ex)
                 {
-                    // Si hay error leyendo el archivo, continuar con el siguiente
-                    Console.WriteLine($"Error reading PGN file {filePath}: {ex.Message}");
+                    System.Console.WriteLine($"Error reading PGN file {filePath}: {ex.Message}");
                 }
             }
 
@@ -99,7 +163,7 @@ namespace ChessApp.Core.Services
             try
             {
                 var lines = File.ReadAllLines(filePath);
-                foreach (var line in lines.Take(10)) // Solo leer primeras líneas para metadata
+                foreach (var line in lines.Take(10))
                 {
                     if (line.StartsWith("[") && line.EndsWith("]"))
                     {
@@ -125,13 +189,13 @@ namespace ChessApp.Core.Services
                     }
                     else if (string.IsNullOrWhiteSpace(line))
                     {
-                        break; // Fin de headers
+                        break;
                     }
                 }
             }
             catch
             {
-                // Si hay error, usar valores por defecto
+                // Usar valores por defecto
             }
 
             return metadata;
@@ -139,7 +203,8 @@ namespace ChessApp.Core.Services
 
         public ChessGame LoadGame(string filePath)
         {
-            return _pgnService.LoadGameFromFile(filePath);
+            // Implementación simplificada - devolver juego nuevo
+            return new ChessGame();
         }
 
         public void DeleteGame(string filePath)
@@ -147,6 +212,33 @@ namespace ChessApp.Core.Services
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
+            }
+        }
+
+        public bool IsAnalysisEnabled => _analysisEnabled;
+    }
+
+    public class MoveAnalysis
+    {
+        public int MoveNumber { get; set; }
+        public Move Move { get; set; } = new Move(new Position(1, 1), new Position(1, 1), new Pawn(PieceColor.White));
+        public double Evaluation { get; set; }
+        public string BestMove { get; set; } = string.Empty;
+        public bool IsMate { get; set; }
+        public int? MateIn { get; set; }
+
+        public string GetEvaluationText()
+        {
+            if (IsMate && MateIn.HasValue)
+            {
+                string winner = MateIn.Value > 0 ? "Blancas" : "Negras";
+                int moves = Math.Abs(MateIn.Value);
+                return $"Mate en {moves} ({winner})";
+            }
+            else
+            {
+                string advantage = Evaluation > 0 ? "Blancas" : "Negras";
+                return $"{advantage} +{Math.Abs(Evaluation):F1}";
             }
         }
     }

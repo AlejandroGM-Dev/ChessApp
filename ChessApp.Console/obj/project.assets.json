@@ -2,6 +2,19 @@
   "version": 3,
   "targets": {
     "net9.0": {
+      "ChessApp.Analysis/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "ChessApp.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/ChessApp.Analysis.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/ChessApp.Analysis.dll": {}
+        }
+      },
       "ChessApp.Core/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -15,6 +28,11 @@
     }
   },
   "libraries": {
+    "ChessApp.Analysis/1.0.0": {
+      "type": "project",
+      "path": "../ChessApp.Analysis/ChessApp.Analysis.csproj",
+      "msbuildProject": "../ChessApp.Analysis/ChessApp.Analysis.csproj"
+    },
     "ChessApp.Core/1.0.0": {
       "type": "project",
       "path": "../ChessApp.Core/ChessApp.Core.csproj",
@@ -23,6 +41,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "ChessApp.Analysis >= 1.0.0",
       "ChessApp.Core >= 1.0.0"
     ]
   },
@@ -58,6 +77,9 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
+            "C:\\Users\\GUTIERREZALE\\Documents\\MyApps\\ChessApp\\ChessApp.Analysis\\ChessApp.Analysis.csproj": {
+              "projectPath": "C:\\Users\\GUTIERREZALE\\Documents\\MyApps\\ChessApp\\ChessApp.Analysis\\ChessApp.Analysis.csproj"
+            },
             "C:\\Users\\GUTIERREZALE\\Documents\\MyApps\\ChessApp\\ChessApp.Core\\ChessApp.Core.csproj": {
               "projectPath": "C:\\Users\\GUTIERREZALE\\Documents\\MyApps\\ChessApp\\ChessApp.Core\\ChessApp.Core.csproj"
             }

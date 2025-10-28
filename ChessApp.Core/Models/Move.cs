@@ -99,5 +99,26 @@ namespace ChessApp.Core.Models
         {
             return AlgebraicNotation;
         }
+
+        public string ToUciNotation()
+        {
+            string uci = From.ToString() + To.ToString();
+
+            // Agregar pieza de promoción si es necesario
+            if (IsPromotion && PromotedPieceType.HasValue)
+            {
+                char promotionChar = PromotedPieceType.Value switch
+                {
+                    PieceType.Queen => 'q',
+                    PieceType.Rook => 'r',
+                    PieceType.Bishop => 'b',
+                    PieceType.Knight => 'n',
+                    _ => 'q'
+                };
+                uci += promotionChar;
+            }
+
+            return uci;
+        }
     }
 }
